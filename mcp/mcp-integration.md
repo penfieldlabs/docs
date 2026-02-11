@@ -104,7 +104,9 @@ Store a new memory with automatic type detection.
 | `tags` | array | No | Tags for categorization |
 | `importance` | number | No | 0.0-1.0 (auto-calculated if omitted) |
 
-**Note:** Memory type is auto-detected from content. Valid types: fact, insight, conversation, correction, reference, task, checkpoint, identity_core, personality_trait, relationship, strategy.
+**Note:** Memory type is auto-detected from content. Valid types: fact, insight, conversation, correction, reference, task, checkpoint, relationship, strategy.
+
+**Protected types:** `identity_core` and `personality_trait` are managed exclusively through the `/api/v2/personality` endpoints and cannot be created via `store`. The auto-detection will not produce these types.
 
 ---
 
@@ -273,8 +275,23 @@ Create a checkpoint of cognitive state for session handoffs.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `name` | string | Yes | Checkpoint name |
+| `name` | string | Yes | Checkpoint name (must be unique per tenant) |
 | `description` | string | No | Detailed cognitive handoff description |
+
+**Unique Names:**
+
+Checkpoint names are unique per tenant. Saving with a name that already exists returns an error instead of silently overwriting:
+
+```json
+{
+  "success": false,
+  "error": "Context name 'My Checkpoint' already exists. Use a unique name.",
+  "error_code": "DUPLICATE_NAME",
+  "operation": "save_context"
+}
+```
+
+To avoid collisions, include a timestamp or session identifier in the name (e.g., `"Auth Investigation - 2026-02-11"`).
 
 **Memory References in Descriptions**
 
@@ -366,6 +383,9 @@ List saved checkpoints with optional filtering and pagination.
 {
   "success": true,
   "total": 3,
+  "limit": 20,
+  "offset": 0,
+  "has_more": false,
   "contexts": [
     {
       "id": "uuid",
@@ -378,10 +398,18 @@ List saved checkpoints with optional filtering and pagination.
 }
 ```
 
+| Field | Description |
+|-------|-------------|
+| `total` | Total number of matching contexts |
+| `limit` | Page size used |
+| `offset` | Number of results skipped |
+| `has_more` | Whether more results exist beyond this page |
+
 **Notes:**
-- `name_pattern` performs case-insensitive substring matching
+- `name_pattern` performs case-insensitive substring matching across all pages
 - `include_descriptions` adds full description text (can be large)
 - Contexts are ordered by creation date (newest first)
+- `total` reflects the full count of matching contexts, regardless of `limit`
 
 ---
 

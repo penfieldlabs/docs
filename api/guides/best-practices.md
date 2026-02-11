@@ -154,6 +154,8 @@ This memory will match searches for: "authentication", "OAuth", "PKCE", "tokens"
 
 ### Save Checkpoints at Milestones
 
+Checkpoint names are **unique per tenant** — saving with a duplicate name will fail with an error. Use descriptive names that include context like dates or session identifiers (e.g., `"Auth Investigation - 2026-02-11"`, `"Sprint 4 Handoff"`).
+
 Good times to save context:
 - End of a debugging session
 - Before switching tasks

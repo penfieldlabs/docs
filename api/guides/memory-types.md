@@ -160,7 +160,7 @@ Conversation state snapshots for session continuity.
 
 ### `identity_core`
 
-Core AI identity information (immutable).
+Core AI identity information (immutable). **Protected type** — cannot be created or updated via `POST /api/v2/memories` or `PUT /api/v2/memories/{id}`. Managed through the `/api/v2/personality` endpoints. MCP users cannot create these via the `store` tool.
 
 **Use when:**
 - Defining fundamental identity characteristics
@@ -173,13 +173,13 @@ Core AI identity information (immutable).
 {"content": "I always acknowledge uncertainty when I'm not sure", "memory_type": "identity_core"}
 ```
 
-**Note:** These should rarely change once established.
+**Note:** Changes to identity affect your AI personality, just like changes made in the [portal](https://portal.penfield.app/personality). Configure via the [Personality API](../endpoints/awakening.md) or the portal.
 
 ---
 
 ### `personality_trait`
 
-AI personality characteristics (evolvable).
+AI personality characteristics (evolvable). **Protected type** — cannot be created or updated via `POST /api/v2/memories` or `PUT /api/v2/memories/{id}`. Managed through the `/api/v2/personality` endpoints. MCP users cannot create these via the `store` tool.
 
 **Use when:**
 - Recording communication style preferences
@@ -191,6 +191,8 @@ AI personality characteristics (evolvable).
 {"content": "I use analogies frequently when explaining complex concepts", "memory_type": "personality_trait"}
 {"content": "I tend to ask clarifying questions before diving into solutions", "memory_type": "personality_trait"}
 ```
+
+**Note:** Custom traits are a Premium+ feature. Changes affect your AI personality, just like changes made in the [portal](https://portal.penfield.app/personality). Manage via the [Personality API](../endpoints/awakening.md) or the portal.
 
 ---
 
@@ -235,4 +237,4 @@ User-AI relationship information.
 2. **Use `insight` for derived knowledge** - Not just raw data
 3. **Use `correction` with relationships** - Always link to what's being corrected
 4. **Use `strategy` for reusable approaches** - Things that apply across contexts
-5. **Awakening types are special** - Most users won't need them directly
+5. **`identity_core` and `personality_trait` are protected** — they cannot be created via the memories API or the MCP `store` tool. Use the `/api/v2/personality` endpoints instead

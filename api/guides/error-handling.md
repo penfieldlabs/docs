@@ -56,13 +56,40 @@ if response.status_code == 401:
 | Code | Message | Cause | Solution |
 |------|---------|-------|----------|
 | `AUTH_INSUFFICIENT_PERMISSIONS` | Insufficient permissions | Token lacks required scope | Request token with correct scopes |
+| `AUTH_FORBIDDEN` | Cannot create/set {type} via this endpoint | Attempted to create or update a memory with a protected type (`identity_core`, `personality_trait`) | Use `/api/v2/personality` endpoints instead |
+
+**Protected Memory Types:**
+
+`identity_core` and `personality_trait` cannot be created or updated via `POST /api/v2/memories` or `PUT /api/v2/memories/{id}`. These types are managed exclusively through the `/api/v2/personality` endpoints.
+
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "AUTH_FORBIDDEN",
+    "message": "Cannot create identity_core memories via this endpoint. Use /personality endpoints instead.",
+    "details": null,
+    "field_errors": null
+  },
+  "meta": {
+    "timestamp": "2026-02-11T10:13:32.467536+00:00",
+    "version": "2.0.0",
+    "request_id": "uuid-for-debugging"
+  }
+}
+```
 
 **Handling:**
 ```python
 if response.status_code == 403:
-    # Token is valid but lacks required permissions
-    # User needs token with different/additional scopes
-    request_elevated_access()
+    error_code = response.json().get("error", {}).get("code")
+    if error_code == "AUTH_FORBIDDEN":
+        # Protected memory type or insufficient permissions
+        # Use /personality endpoints for identity_core and personality_trait
+        pass
+    else:
+        # Token is valid but lacks required permissions
+        request_elevated_access()
 ```
 
 ---
@@ -140,6 +167,32 @@ if response.status_code == 404:
 |------|---------|-------|----------|
 | `RES_ALREADY_EXISTS` | Resource already exists | Duplicate creation attempt | Use existing resource |
 | `RES_RELATIONSHIP_EXISTS` | Relationship exists | Duplicate relationship | Skip or update existing |
+
+**Checkpoint Name Uniqueness:**
+
+Checkpoint names are unique per tenant. Attempting to save a context with a name that already exists returns a 409 with `RES_ALREADY_EXISTS`:
+
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "RES_ALREADY_EXISTS",
+    "message": "Context with identifier 'My Checkpoint' already exists",
+    "details": {
+      "resource_type": "Context",
+      "identifier": "My Checkpoint"
+    },
+    "field_errors": null
+  },
+  "meta": {
+    "timestamp": "2026-02-11T09:58:31.131531+00:00",
+    "version": "2.0.0",
+    "request_id": "uuid-for-debugging"
+  }
+}
+```
+
+The MCP `save_context` tool surfaces this as a `DUPLICATE_NAME` error code. See the [MCP Integration Guide](../mcp/mcp-integration.md#save_context) for details.
 
 ---
 

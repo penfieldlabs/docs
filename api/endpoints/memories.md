@@ -82,9 +82,10 @@ POST https://api.penfield.app/api/v2/memories
 
 | Status | Code | Description |
 |--------|------|-------------|
+| 401 | `AUTH_UNAUTHORIZED` | Missing or invalid token |
+| 403 | `AUTH_FORBIDDEN` | `memory_type` is `identity_core` or `personality_trait` (use `/api/v2/personality` endpoints) |
 | 422 | `VAL_VALIDATION_FAILED` | Invalid request body |
 | 422 | `VAL_FIELD_TOO_LONG` | Content exceeds 10,000 characters |
-| 401 | `AUTH_UNAUTHORIZED` | Missing or invalid token |
 
 ---
 
@@ -283,6 +284,7 @@ Returns the updated memory object.
 
 | Status | Code | Description |
 |--------|------|-------------|
+| 403 | `AUTH_FORBIDDEN` | `memory_type` is `identity_core` or `personality_trait` (use `/api/v2/personality` endpoints) |
 | 404 | `RES_NOT_FOUND` | Memory not found |
 | 422 | `VAL_VALIDATION_FAILED` | Invalid update data |
 
