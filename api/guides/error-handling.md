@@ -192,7 +192,7 @@ Checkpoint names are unique per tenant. Attempting to save a context with a name
 }
 ```
 
-The MCP `save_context` tool surfaces this as a `DUPLICATE_NAME` error code. See the [MCP Integration Guide](../mcp/mcp-integration.md#save_context) for details.
+The MCP `save_context` tool surfaces this as a `DUPLICATE_NAME` error code. See the [MCP Integration Guide](../../mcp/mcp-integration.md#save_context) for details.
 
 ---
 

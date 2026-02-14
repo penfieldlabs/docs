@@ -11,7 +11,7 @@ Penfield uses OAuth 2.1 for authentication, compliant with the [MCP 2025-11-25 A
 | Getting started / testing | [API Key Exchange](#api-key-exchange) | Simple |
 | Server-to-server automation | [API Key Exchange](#api-key-exchange) | Simple |
 | CLI tool / headless device | [Device Code Flow](#device-code-flow-rfc-8628) | Medium |
-| Desktop/web app with browser | [Authorization Code + PKCE](#authorization-code--pkce) | Standard |
+| Desktop/web app with browser | [Authorization Code + PKCE](#authorization-code-pkce) | Standard |
 
 All methods produce the same JWT tokens. Choose based on your use case.
 

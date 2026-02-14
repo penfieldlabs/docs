@@ -1,0 +1,11 @@
+# MkDocs
+site/
+.cache/
+
+# Python
+__pycache__/
+.venv/
+venv/
+
+# OS
+.DS_Store

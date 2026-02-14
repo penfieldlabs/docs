@@ -64,7 +64,7 @@ The MCP server exposes Penfield's memory and knowledge graph capabilities as too
 > - MCP `start_memory` → REST API `start_memory_id`
 > - MCP `memory_id` → REST API `id` (in path)
 >
-> This documentation shows MCP parameter names. For direct REST API usage, see the [endpoint documentation](../api/endpoints/).
+> This documentation shows MCP parameter names. For direct REST API usage, see the [API documentation](../api/README.md).
 
 ### awaken
 

@@ -252,4 +252,4 @@ Rate limits may be enforced.
 
 ---
 
-© 2025 Penfield™. All Rights Reserved.
+© 2026 Penfield™. All Rights Reserved.

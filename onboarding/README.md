@@ -18,4 +18,4 @@ Get started with Penfield across your preferred AI platform.
 
 ---
 
-© 2025 Penfield™. All Rights Reserved.
+© 2026 Penfield™. All Rights Reserved.

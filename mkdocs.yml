@@ -1,0 +1,106 @@
+site_name: Penfield Docs
+site_url: https://docs.penfield.app
+site_description: Documentation for Penfield - Persistent Memory for AI Assistants
+repo_url: https://github.com/penfieldlabs/docs
+repo_name: penfieldlabs/docs
+
+exclude_docs: |
+  overrides/
+  .github/
+  .gitignore
+  requirements.txt
+  mkdocs.yml
+  LICENSE
+
+theme:
+  name: material
+  custom_dir: overrides
+  palette:
+    scheme: slate
+    primary: custom
+    accent: custom
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: README.md
+  - Getting Started:
+    - Setup Guide: onboarding/penfield-setup-guide.md
+    - Quick Reference: onboarding/penfield-user-quick-reference.md
+    - Example Custom Instructions: onboarding/example-custom-instructions.md
+  - Platform Setup:
+    - Overview: onboarding/README.md
+    - Claude Code: onboarding/claude-code-setup.md
+    - MCP Remote (Cursor, Windsurf, etc.): onboarding/mcp-remote-setup.md
+    - Reconnecting: onboarding/reconnect-penfield.md
+  - MCP Integration:
+    - Tool Reference: mcp/mcp-integration.md
+  - API Reference:
+    - Overview: api/README.md
+    - Guides:
+      - Quick Start: api/guides/quick-start.md
+      - Best Practices: api/guides/best-practices.md
+      - Common Patterns: api/guides/common-patterns.md
+      - Memory Types: api/guides/memory-types.md
+      - Relationship Types: api/guides/relationship-types.md
+      - Error Handling: api/guides/error-handling.md
+      - Troubleshooting: api/guides/troubleshooting.md
+    - Endpoints:
+      - Authentication: api/endpoints/authentication.md
+      - Memories: api/endpoints/memories.md
+      - Search: api/endpoints/search.md
+      - Relationships: api/endpoints/relationships.md
+      - Documents: api/endpoints/documents.md
+      - Artifacts: api/endpoints/artifacts.md
+      - Analysis: api/endpoints/analysis.md
+      - Tags: api/endpoints/tags.md
+      - Awakening: api/endpoints/awakening.md
+    - Examples:
+      - Python: api/examples/python.md
+      - cURL: api/examples/curl.md
+    - Schemas:
+      - Common Types: api/schemas/common.md
+      - Enums: api/schemas/enums.md
+  - Install Prompt: install-prompt.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/penfieldlabs
+  generator: false
+
+copyright: "&copy; 2026 Penfield&trade;. All Rights Reserved."
