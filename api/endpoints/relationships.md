@@ -255,6 +255,7 @@ HTTP 204 No Content
 
 ### Notes
 
+- **Requires `delete` permission** on your API key.
 - For `INVERSE_PAIRED` relationships, you need to delete both relationships separately
 - Deleting a relationship does not affect the connected memories
 
@@ -280,6 +281,10 @@ DELETE https://api.penfield.app/api/v2/relationships/between?from_id={from_id}&t
 ```
 HTTP 204 No Content
 ```
+
+### Notes
+
+- **Requires `delete` permission** on your API key.
 
 ### Errors
 

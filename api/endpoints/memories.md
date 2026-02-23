@@ -315,7 +315,7 @@ HTTP 204 No Content
 - This operation is permanent and cannot be undone
 - Associated relationships are also deleted
 - Tags are not deleted (they may be used by other memories)
-- **Reserved for Portal/API Use:** This endpoint requires `write` scope and is not available via standard MCP access. It is intended for administrative use through the Penfield Portal or API keys with elevated permissions.
+- **Requires `delete` permission** on your API key. Not available via standard MCP access.
 
 ### Errors
 

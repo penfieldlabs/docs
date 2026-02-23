@@ -33,9 +33,8 @@ The MCP server exposes Penfield's memory and knowledge graph capabilities as too
 | Tool | Description | API Equivalent |
 |------|-------------|----------------|
 | `connect` | Create relationship between memories | `POST /api/v2/relationships` |
+| `disconnect` | Remove a relationship between memories | `DELETE /api/v2/relationships/between` |
 | `explore` | Traverse the knowledge graph | `POST /api/v2/relationships/traverse` |
-
-> **Note:** `disconnect` (relationship removal) is registered as an MCP tool but returns `403 Forbidden` for standard MCP users. It requires elevated permissions (`RELATIONSHIPS_DELETE`, `DELETE`, or `ADMIN` scope). Use the REST API with `write` scope or Penfield Portal instead.
 
 ### Context Management Tools
 
@@ -217,6 +216,32 @@ Create a relationship between two memories.
 > **MCP ↔ REST Parameter Mapping:**
 > - MCP `from_memory` → REST API `from_id`
 > - MCP `to_memory` → REST API `to_id`
+
+---
+
+### disconnect
+
+Remove a relationship between two memories.
+
+```json
+{
+  "from_memory": "uuid-1",
+  "to_memory": "uuid-2"
+}
+```
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `from_memory` | UUID | Yes | Source memory ID |
+| `to_memory` | UUID | Yes | Target memory ID |
+
+> **MCP ↔ REST Parameter Mapping:**
+> - MCP `from_memory` → REST API `from_id`
+> - MCP `to_memory` → REST API `to_id`
+
+**API Endpoint:** `DELETE /api/v2/relationships/between?from_id={id}&to_id={id}`
+
+> **REST API:** Requires `delete` permission on your API key.
 
 ---
 
@@ -487,41 +512,15 @@ Delete a stored artifact.
 
 ---
 
-## Restricted Tools (Not Available via Standard MCP)
+## Restricted Tool (Not Available via MCP)
 
-These tools require elevated permissions and are only available via the REST API with `write` scope or through the Penfield Portal.
-
-### disconnect
-
-Remove a relationship between memories.
-
-**Status:** Registered as MCP tool but **requires elevated permissions**.
-
-**Why it fails:** The tool is visible in MCP tool lists, but calling it returns `403 Forbidden` for standard MCP users. The underlying API endpoint requires `RELATIONSHIPS_DELETE`, `DELETE`, or `ADMIN` scope, which standard MCP access does not include.
-
-**Recommendation:** Use the REST API with `write` scope or access via Penfield Portal for relationship removal.
-
-**Parameters:**
-- `from_memory` (UUID): Source memory ID
-- `to_memory` (UUID): Target memory ID
-
-**API Endpoint:** `DELETE /api/v2/relationships/between?from_id={id}&to_id={id}`
-
-**Error when called via MCP:**
-```json
-{
-  "error": "Forbidden",
-  "status_code": 403
-}
-```
-
----
+This tool is not available via MCP. Use the REST API with an API key that has `delete` permission, or use the Penfield Portal.
 
 ### delete_memory
 
 Permanently delete a memory.
 
-**Why restricted:** Memory deletion is a destructive operation. To prevent accidental data loss, it's excluded from MCP tools and requires explicit API access with `write` scope.
+**Why restricted:** Memory deletion is a destructive operation. To prevent accidental data loss, it's excluded from MCP tools. Requires `delete` permission on your API key.
 
 **API Endpoint:** `DELETE /api/v2/memories/{id}`
 
