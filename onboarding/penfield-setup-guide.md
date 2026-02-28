@@ -12,7 +12,7 @@ Connect Penfield to Claude.ai and configure your personalized AI assistant.
 
 ## Step 1: Sign Up for a Free Trial
 
-Go to [https://portal.penfield.app/sign-up](https://portal.penfield.app/sign-up).
+Go to [https://portal.penfield.app/sign-up](https://portal.penfield.app/sign-up)
 
 ---
 
@@ -20,9 +20,9 @@ Go to [https://portal.penfield.app/sign-up](https://portal.penfield.app/sign-up)
 
 If prompted, complete the Cloudflare verification by clicking the checkbox.
 
-![Cloudflare verification](./img/setup-02-captcha.png)
+![Account creation screen](./img/setup-02-captcha.png)
 
-Set a password, or select **Continue with Google** if your invitation was sent to a Gmail or Google Workspace address. Review and accept the Terms of Service, then click **Continue**.
+Enter your name, email address and set a password, or connect with your Google account.
 
 ![Account creation screen](./img/setup-03-create-account.png)
 
@@ -121,10 +121,10 @@ You can choose from a standard persona and add custom instructions to personaliz
 Start a new conversation in Claude and type:
 
 ```
-Awaken
+Penfield Awaken
 ```
 
-![Typing Awaken in Claude](./img/setup-15-awaken-input.png)
+![Typing Penfield Awaken in Claude](./img/setup-15-awaken-input.png)
 
 Penfield will load your personality configuration and respond with a personalized greeting.
 
@@ -148,7 +148,7 @@ You can also manage tool permissions in **Settings > Connectors > Penfield**.
 
 ## Usage Tips
 
-- **Start each new conversation with "Awaken"** to load your Penfield configuration
+- **Start each new conversation with "Penfield Awaken"** to load your Penfield configuration
 - **Extended thinking mode** is recommended for most tasks
 - **Custom styles** — Ask your Penfield assistant to develop, save, and recall writing styles
 

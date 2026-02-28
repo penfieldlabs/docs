@@ -16,7 +16,7 @@ There are three ways to connect, from simplest to most powerful:
 
 If you've already added Penfield as a connector on [claude.ai](https://claude.ai), Claude Code automatically picks it up. No additional setup is needed.
 
-Launch Claude Code and type "Awaken" to verify the connection:
+Launch Claude Code and type "Penfield Awaken" to verify the connection:
 
 ```bash
 claude
@@ -69,7 +69,7 @@ Run the `/mcp` command to view your MCP servers:
 
 ### Verification
 
-After authentication, Penfield tools will be available in your Claude Code sessions. Start a new session and type "Awaken" to test the connection.
+After authentication, Penfield tools will be available in your Claude Code sessions. Start a new session and type "Penfield Awaken" to test the connection.
 
 ---
 
@@ -108,7 +108,7 @@ If you haven't previously authorized Penfield, you'll be prompted to authenticat
 
 ### Verification
 
-Start a new session. The plugin will automatically inject your memory context on startup. Type "Awaken" to confirm everything is working.
+Start a new session. The plugin will automatically inject your memory context on startup. Type "Penfield Awaken" to confirm everything is working.
 
 ---
 

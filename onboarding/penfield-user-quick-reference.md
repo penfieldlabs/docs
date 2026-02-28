@@ -45,7 +45,7 @@ Your AI will confirm it remembered, and that information will be available next 
 
 When you start a fresh chat, your AI has "amnesia" by default. To bring back your context:
 
-**Say: "Awaken"**
+**Say: "Penfield Awaken"**
 
 Your AI will load your personality configuration, preferences, and be ready to access all your stored memories.
 
@@ -182,7 +182,7 @@ Remember all of this.
 ### Day 2: Test It Works
 
 1. Close your chat and open a fresh one
-2. Say: **"Awaken"**
+2. Say: **"Penfield Awaken"**
 3. Ask: "What do you remember about me?"
 4. Your AI should recall yesterday's profile
 
@@ -232,7 +232,7 @@ During your normal work:
 
 ### Not Working in New Chat
 
-- Make sure you said **"Awaken"** first
+- Make sure you said **"Penfield Awaken"** first
 - Try: "Use recall to find all memories about me"
 - Reconnect Penfield (Settings → disconnect → reconnect)
 
@@ -261,7 +261,7 @@ After completing a research task, make sure to disable Research mode:
 
 1. Say: "Remember this: My favorite color is blue"
 2. Close chat, open new one
-3. Say: **"Awaken"**
+3. Say: **"Penfield Awaken"**
 4. Ask: "What's my favorite color?"
 5. AI should say: "Blue"
 
@@ -532,7 +532,7 @@ If you're unsure, be explicit: "Remember this" or "Don't store this"
 
 ### Starting a New Project
 
-1. **"Awaken"** to load your context
+1. **"Penfield Awaken"** to load your context
 2. Brief your AI on the new project
 3. Say "Remember this is Project [Name]" for clear organization
 
@@ -552,7 +552,7 @@ If you're unsure, be explicit: "Remember this" or "Don't store this"
 ### Resuming Later
 
 1. Open new chat
-2. **"Awaken"**
+2. **"Penfield Awaken"**
 3. If you saved checkpoint: "Restore checkpoint for Project [Name]"
 4. Ask: "Where were we with [Project]?"
 
@@ -590,7 +590,7 @@ Use Penfeild freely, but avoid spamming it with low-quality memories.
 
 You don't need power user features if:
 
-- Basic "remember this" and "Awaken" work fine for you
+- Basic "remember this" and "Penfield Awaken" work fine for you
 - You're not working on complex, multi-session projects
 - You don't need to map decision trees or relationships
 - Natural language gets you what you need

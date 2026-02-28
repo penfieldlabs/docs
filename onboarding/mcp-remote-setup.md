@@ -104,7 +104,7 @@ Add the Penfield configuration and save the file:
 
 ### Step 6: Restart and Test
 
-Restart Antigravity. If you haven't authorized Penfield previously, a browser tab will open automatically. Start a new chat and type "Awaken" to test the connection.
+Restart Antigravity. If you haven't authorized Penfield previously, a browser tab will open automatically. Start a new chat and type "Penfield Awaken" to test the connection.
 
 ---
 

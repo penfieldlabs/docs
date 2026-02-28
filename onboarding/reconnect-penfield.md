@@ -10,7 +10,7 @@ Open the chat input menu in Claude and check that **Penfield** appears with the 
 
 ![Penfield connected in chat menu](./img/reconnect-01-penfield-connected.png)
 
-If Penfield appears and is enabled, your connection is working. Try typing "Awaken" in a new chat to test.
+If Penfield appears and is enabled, your connection is working. Try typing "Penfield Awaken" in a new chat to test.
 
 ---
 

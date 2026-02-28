@@ -44,7 +44,7 @@ Common config file locations:
 
 After adding the config, restart the application. A browser window will open for authorization. Complete the authorization flow.
 
-**To verify the connection works:** Type "Awaken" and Penfield should respond with a personalized briefing.
+**To verify the connection works:** Type "Penfield Awaken" and Penfield should respond with a personalized briefing.
 
 **Optional next steps:**
 - Visit https://portal.penfield.app to customize your AI personality
