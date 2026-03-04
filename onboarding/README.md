@@ -8,6 +8,7 @@ Get started with Penfield across your preferred AI platform.
 
 - [Penfield Setup Guide](penfield-setup-guide.md) - Create your account and connect to Claude.ai
 - [Claude Code Setup](claude-code-setup.md) - Connect Penfield to Claude Code (terminal)
+- [Manus Setup](manus-setup.md) - Connect to Manus
 - [MCP Remote Setup](mcp-remote-setup.md) - Connect via mcp-remote (Windsurf, Cursor, Gemini, and more)
 - [Troubleshooting](reconnect-penfield.md) - Diagnose and fix connection issues
 
