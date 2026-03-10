@@ -88,6 +88,7 @@ nav:
       - Artifacts: api/endpoints/artifacts.md
       - Analysis: api/endpoints/analysis.md
       - Tags: api/endpoints/tags.md
+      - Personality: api/endpoints/personality.md
       - Awakening: api/endpoints/awakening.md
     - Examples:
       - Python: api/examples/python.md

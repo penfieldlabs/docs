@@ -4,6 +4,8 @@ Load the user's personality briefing - used by AI assistants to orient themselve
 
 **Endpoint:** `GET /api/v2/personality/awakening`
 
+For full documentation of all personality endpoints (persona selection, custom traits, awakening briefing), see [Personality Endpoints](personality.md).
+
 ---
 
 ## Request

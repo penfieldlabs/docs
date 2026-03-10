@@ -13,8 +13,7 @@ New to Penfield? Start here:
 - [Setup Guide](onboarding/penfield-setup-guide.md) - Create your account and connect to Claude.ai
 - [Claude Code Setup](onboarding/claude-code-setup.md) - Connect to Claude Code in the terminal
 - [Manus Setup](onboarding/manus-setup.md) - Connect to Manus
-- [MCP Remote Setup](onboarding/mcp-remote-setup.md) - Windsurf, Cursor, Gemini, Perplexity Desktop, and more
-- [Perplexity Setup](onboarding/perplexity-setup.md) - Connect to Comet browser, Perplexity Web and Perplexity Computer
+- [MCP Remote Setup](onboarding/mcp-remote-setup.md) - Antigravity, Cursor, LM Studio, Windsurf, and more
 - [Quick Reference](onboarding/penfield-user-quick-reference.md) - Learn how to use Penfield effectively
 
 ## How It Works

@@ -173,7 +173,7 @@ Core AI identity information (immutable). **Protected type** — cannot be creat
 {"content": "I always acknowledge uncertainty when I'm not sure", "memory_type": "identity_core"}
 ```
 
-**Note:** Changes to identity affect your AI personality, just like changes made in the [portal](https://portal.penfield.app/personality). Configure via the [Personality API](../endpoints/awakening.md) or the portal.
+**Note:** Changes to identity affect your AI personality, just like changes made in the [portal](https://portal.penfield.app/personality). Configure via the [Personality API](../endpoints/personality.md) or the portal.
 
 ---
 
@@ -192,7 +192,7 @@ AI personality characteristics (evolvable). **Protected type** — cannot be cre
 {"content": "I tend to ask clarifying questions before diving into solutions", "memory_type": "personality_trait"}
 ```
 
-**Note:** Custom traits are a Premium+ feature. Changes affect your AI personality, just like changes made in the [portal](https://portal.penfield.app/personality). Manage via the [Personality API](../endpoints/awakening.md) or the portal.
+**Note:** Custom traits require Premium tier or higher (see [Tier Hierarchy](../endpoints/personality.md#tier-hierarchy)). Changes affect your AI personality, just like changes made in the [portal](https://portal.penfield.app/personality). Manage via the [Personality API](../endpoints/personality.md) or the portal.
 
 ---
 
