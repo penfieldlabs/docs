@@ -18,11 +18,11 @@ Go to [https://portal.penfield.app/sign-up](https://portal.penfield.app/sign-up)
 
 ## Step 2: Create Your Penfield Account
 
-If prompted, complete the Cloudflare verification by clicking the checkbox.
-
-![Account creation screen](./img/setup-02-captcha.png)
-
 Enter your name, email address and set a password, or connect with your Google account.
+
+![Sign up screen](./img/setup-02-signup.png)
+
+Agree to the Terms of Service and the Privacy Policy and click "Continue".
 
 ![Account creation screen](./img/setup-03-create-account.png)
 
