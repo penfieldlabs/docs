@@ -510,6 +510,8 @@ Delete a stored artifact.
 |-----------|------|----------|-------------|
 | `path` | string | Yes | Artifact path to delete |
 
+> **Note on artifact searchability:** Artifacts are files, not memories. They do not appear in `recall` or `search` results. To find an artifact, use `retrieve_artifact` with the path, or browse with `list_artifacts`. If you want an artifact to be discoverable via search, use `store` to create a memory that includes the artifact path in its content.
+
 ---
 
 ## Restricted Tool (Not Available via MCP)

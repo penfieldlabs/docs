@@ -282,8 +282,8 @@ DELETE https://api.penfield.app/api/v2/artifacts?path={path}
 
 ### Notes
 
-- This operation is permanent
-- Associated memory record is also deleted
+- This operation is permanent and cannot be undone
+- Any memories you created that reference this artifact path will not be affected — delete those separately if needed
 - Parent directories are not deleted (even if empty)
 
 ### Errors
@@ -364,6 +364,41 @@ Content types are automatically detected based on file extension:
 |---------|-----------|----------|
 | Organization | Path-based hierarchy | Flat with tags |
 | Content | Files (text, code, diagrams) | Knowledge snippets |
-| Searchable | No (planned) | Yes (hybrid search) |
+| Searchable | No | Yes (hybrid search) |
 | Relationships | No | Yes (knowledge graph) |
-| Use Case | Store outputs | Store knowledge |
+| Use Case | Store files and full-length content | Store searchable knowledge |
+
+Artifacts are files. They are not included in search or recall results. To retrieve an artifact, you need its path.
+
+### Finding Artifacts
+
+There are three ways to find an artifact:
+
+1. **By path** — If you know the path, call [Retrieve Artifact](#retrieve-artifact) directly.
+2. **By browsing** — Use [List Artifacts](#list-artifacts) to browse the directory tree.
+3. **Via a memory reference** — Create a memory that includes the artifact path in its content. When that memory appears in search results, follow the path to retrieve the full artifact.
+
+This third approach is useful for content that exceeds the memory size limit but still needs to be discoverable. For example, a long research document can be stored as an artifact, with a shorter summary memory that references the artifact path:
+
+```bash
+# 1. Store the full document as an artifact
+curl -X POST https://api.penfield.app/api/v2/artifacts \
+-H "Authorization: Bearer $JWT_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "path": "/research/sec-analysis.md",
+  "content": "# Full 50-page SEC analysis document content..."
+}'
+
+# 2. Create a searchable summary memory that points to it
+curl -X POST https://api.penfield.app/api/v2/memories \
+-H "Authorization: Bearer $JWT_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "content": "Regulatory analysis of silver bullion P2P trading under SEC guidelines. Covers exemptions, reporting requirements, and state-level variations. Full document: /research/sec-analysis.md",
+  "memory_type": "reference",
+  "tags": ["sec", "silver", "regulations"]
+}'
+```
+
+When an agent searches for "SEC silver trading regulations", the summary memory appears in results. The agent reads the path from the content and calls `retrieve_artifact` to get the full document.
