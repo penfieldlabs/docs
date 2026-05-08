@@ -482,17 +482,33 @@ Get a stored artifact.
 
 ### list_artifacts
 
-List artifacts in a directory.
+List artifacts in a directory, with optional name filtering.
 
+**Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `path_prefix` | string | `/` | Directory prefix to list |
+| `name_pattern` | string | - | Filter by name (case-insensitive substring match, applied to both files and folders) |
+
+**Example - Basic:**
 ```json
 {
   "path_prefix": "/project/"
 }
 ```
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `path_prefix` | string | No | Directory prefix (default: "/") |
+**Example - With filtering:**
+```json
+{
+  "path_prefix": "/project/",
+  "name_pattern": "meeting"
+}
+```
+
+**Notes:**
+- Returns immediate contents only (not recursive)
+- `name_pattern` performs case-insensitive substring matching against both file and folder names
 
 ---
 

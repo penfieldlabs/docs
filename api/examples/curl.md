@@ -272,6 +272,10 @@ curl -X GET "https://api.penfield.app/api/v2/artifacts/list" \
 # Specific directory
 curl -X GET "https://api.penfield.app/api/v2/artifacts/list?prefix=/notes" \
 -H "Authorization: Bearer $JWT_TOKEN"
+
+# Filter by name (case-insensitive substring on files and folders)
+curl -X GET "https://api.penfield.app/api/v2/artifacts/list?prefix=/notes&name_pattern=meeting" \
+-H "Authorization: Bearer $JWT_TOKEN"
 ```
 
 ### Delete Artifact

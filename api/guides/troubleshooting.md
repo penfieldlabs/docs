@@ -111,7 +111,7 @@ curl -s https://api.penfield.app/.well-known/oauth-authorization-server | \
 
 | Field | Limit | Solution |
 |-------|-------|----------|
-| `content` | 10,000 chars | Truncate or split into multiple memories |
+| `content` | 10,000 chars | Truncate, split into multiple memories, upload as a document, or store as an artifact with a summary memory linking to it |
 | `importance` | 0.0-1.0 | Ensure value is in range |
 | `tags` | 10 max | Use fewer, broader tags |
 | `memory_type` | 11 valid types | Check [Memory Types Guide](./memory-types.md) |

@@ -100,7 +100,7 @@ if response.status_code == 403:
 |------|---------|-------|----------|
 | `VAL_VALIDATION_FAILED` | Validation failed | Request body invalid | Check request format |
 | `VAL_FIELD_REQUIRED` | Required field missing | Missing required parameter | Add required field |
-| `VAL_FIELD_TOO_LONG` | Field too long | Content exceeds max length | Truncate content (max 10,000 chars) |
+| `VAL_FIELD_TOO_LONG` | Field too long | Content exceeds max length | Truncate, split into multiple memories, upload as a document, or store as an artifact with a summary memory linking to it |
 | `VAL_FIELD_INVALID` | Invalid field value | Wrong type or format | Check field type |
 | `VAL_UUID_INVALID` | Invalid UUID format | Malformed UUID | Use valid UUID v4 |
 | `VAL_ENUM_INVALID` | Invalid enum value | Value not in allowed list | Use valid enum value |

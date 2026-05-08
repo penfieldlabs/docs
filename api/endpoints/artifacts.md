@@ -194,6 +194,7 @@ GET https://api.penfield.app/api/v2/artifacts/list?prefix={prefix}
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `prefix` | string | `/` | Directory path to list |
+| `name_pattern` | string | - | Case-insensitive substring filter applied to file and folder names |
 
 ### Response
 
@@ -239,6 +240,7 @@ GET https://api.penfield.app/api/v2/artifacts/list?prefix={prefix}
 - Returns immediate contents only (not recursive)
 - Folders are returned as name strings; combine with `path` to get full paths
 - Empty directories are not shown
+- `name_pattern` is applied server-side against both file names and folder names within the listed directory
 
 ### Example
 
@@ -249,6 +251,10 @@ curl -X GET "https://api.penfield.app/api/v2/artifacts/list" \
 
 # List specific directory
 curl -X GET "https://api.penfield.app/api/v2/artifacts/list?prefix=/project/docs" \
+-H "Authorization: Bearer $JWT_TOKEN"
+
+# Filter by name (case-insensitive substring)
+curl -X GET "https://api.penfield.app/api/v2/artifacts/list?prefix=/project/docs&name_pattern=meeting" \
 -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
