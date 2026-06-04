@@ -1,0 +1,107 @@
+/* Penfield Brand Overrides for MkDocs Material */
+
+:root {
+  /* Brand colors from penfield.app - single source of truth */
+  --penfield-bg-dark: #1a1a1f;
+  --penfield-bg-surface: #25252c;
+  --penfield-bg-surface-hover: #2a2a33;
+  --penfield-bg-surface-active: #33333d;
+  --penfield-text-primary: #f1f5f9;
+  --penfield-text-secondary: #94a3b8;
+  --penfield-text-tertiary: #64748b;
+  --penfield-accent-blue: #0ea5e9;
+  --penfield-accent-purple: #8b5cf6;
+  --penfield-accent-purple-light: #a78bfa;
+}
+
+/* Override Material theme slate colors */
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: var(--penfield-bg-dark);
+  --md-default-bg-color--light: var(--penfield-bg-surface);
+  --md-default-bg-color--lighter: var(--penfield-bg-surface-hover);
+  --md-default-bg-color--lightest: var(--penfield-bg-surface-active);
+  --md-default-fg-color: var(--penfield-text-primary);
+  --md-default-fg-color--light: var(--penfield-text-secondary);
+  --md-default-fg-color--lighter: var(--penfield-text-tertiary);
+  --md-primary-fg-color: var(--penfield-accent-purple);
+  --md-primary-bg-color: var(--penfield-text-primary);
+  --md-accent-fg-color: var(--penfield-accent-blue);
+  --md-typeset-a-color: var(--penfield-accent-blue);
+}
+
+/* Header gradient to match penfield.app brand */
+.md-header {
+  background: linear-gradient(135deg, var(--penfield-accent-blue) 0%, var(--penfield-accent-purple) 100%);
+}
+
+/* Navigation sidebar */
+.md-sidebar {
+  background-color: var(--penfield-bg-dark);
+}
+
+/* Code blocks */
+.md-typeset code {
+  background-color: var(--penfield-bg-surface);
+}
+
+.md-typeset pre > code {
+  background-color: var(--penfield-bg-surface);
+}
+
+/* Search bar */
+.md-search__input {
+  background-color: var(--penfield-bg-surface);
+}
+
+/* Footer */
+.md-footer {
+  background-color: var(--penfield-bg-dark);
+}
+
+/* Tables */
+.md-typeset table:not([class]) th {
+  background-color: var(--penfield-bg-surface);
+}
+
+/* Admonitions */
+.md-typeset .admonition {
+  border-color: var(--penfield-accent-purple);
+}
+
+/* Links */
+.md-typeset a {
+  color: var(--penfield-accent-blue);
+}
+
+.md-typeset a:hover {
+  color: var(--penfield-accent-purple);
+}
+
+/* Navigation active item - higher specificity avoids !important */
+[data-md-color-scheme="slate"] .md-nav__link--active {
+  color: var(--penfield-accent-blue);
+}
+
+/* Scrollbar - Chromium */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--penfield-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--penfield-bg-surface-active);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--penfield-accent-purple);
+}
+
+/* Scrollbar - Firefox */
+html {
+  scrollbar-color: var(--penfield-bg-surface-active) var(--penfield-bg-dark);
+  scrollbar-width: thin;
+}
