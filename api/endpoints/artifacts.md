@@ -97,7 +97,7 @@ readme.md          # Missing leading /
 
 ### Size Limits
 
-- Maximum artifact size: 10MB
+- Maximum artifact size: 1MB
 
 ### Errors
 
@@ -105,7 +105,7 @@ readme.md          # Missing leading /
 |--------|------|-------------|
 | 400 | - | Invalid path format |
 | 409 | - | Artifact already exists at path |
-| 413 | - | Content exceeds 10MB limit |
+| 413 | - | Content exceeds 1MB limit |
 
 ### Example
 

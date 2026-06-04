@@ -64,8 +64,11 @@ nav:
     - Example Custom Instructions: onboarding/example-custom-instructions.md
   - Platform Setup:
     - Overview: onboarding/README.md
+    - ChatGPT: onboarding/chatgpt-setup.md
     - Claude Code: onboarding/claude-code-setup.md
+    - Manus: onboarding/manus-setup.md
     - MCP Remote (Cursor, Windsurf, etc.): onboarding/mcp-remote-setup.md
+    - Perplexity: onboarding/perplexity-setup.md
     - Reconnecting: onboarding/reconnect-penfield.md
   - MCP Integration:
     - Tool Reference: mcp/mcp-integration.md
