@@ -40,8 +40,8 @@ You can choose from a standard persona and add custom instructions to personaliz
 
 Penfield connects to your AI as a remote MCP server. Most AI apps support this. They call it a *connector*, a *plugin* or an *app*, depending on the product, and the setup is the same idea everywhere: add `https://mcp.penfield.app` and sign in to Penfield.
 
-- [Claude Setup](onboarding/claude-setup.md) - Connect to Claude
 - [ChatGPT Setup](onboarding/chatgpt-setup.md) - Connect to ChatGPT
+- [Claude Setup](onboarding/claude-setup.md) - Connect to Claude
 - [Claude Code Setup](onboarding/claude-code-setup.md) - Connect to Claude Code in the terminal
 - [Grok Setup](onboarding/grok-setup.md) - Connect to Grok
 - [Manus Setup](onboarding/manus-setup.md) - Connect to Manus
