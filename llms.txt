@@ -1,0 +1,126 @@
+# Penfield
+
+> Penfield is persistent memory for AI assistants. It stores what an AI learns as memories, links them into a knowledge graph, and finds them again with hybrid search, across conversations and across AI apps. An AI connects to Penfield as a remote MCP server at https://mcp.penfield.app, or through the REST API at https://api.penfield.app/api/v2. This file explains Penfield to LLMs and agents and indexes the documentation at https://docs.penfield.app.
+
+Every documentation page is also available as plain Markdown. Take the page path and read it from the public source repository: https://raw.githubusercontent.com/penfieldlabs/docs/main/{path}.md (for example https://raw.githubusercontent.com/penfieldlabs/docs/main/api/endpoints/memories.md).
+
+## What Penfield stores
+
+- **Memories**: single pieces of knowledge, up to 10,000 characters each. Each has a type (11 types: fact, insight, conversation, correction, reference, task, checkpoint, identity_core, personality_trait, relationship, strategy), an importance and a confidence from 0 to 1, and up to 10 tags.
+- **Relationships**: typed, directed links between two memories. There are 24 types in 8 categories, such as supports, contradicts, supersedes, updates, causes, part_of, references and follows. Together they form a knowledge graph that search can follow.
+- **Documents**: files the user uploads (text, Markdown, PDF, EPUB, HTML, JSON, YAML, code; up to 20 MB). Penfield splits them into chunks and the chunks are searchable alongside memories.
+- **Artifacts**: file storage with a folder tree, up to 1 MB per file. An artifact is saved, read, listed and deleted by its path. Artifacts are not searched. To make one findable, store a memory that describes the file and gives its path.
+- **Contexts**: named checkpoints of a work session. One agent saves a context and a later session, or another agent, restores it.
+- **Personality**: a persona and custom instructions chosen by the user in the Penfield portal. An AI loads them at the start of a conversation with the awaken call.
+
+Search is hybrid: BM25 keyword search, vector similarity and graph expansion, fused into one ranking. Default weights are 0.4, 0.4 and 0.2.
+
+## How to connect
+
+Choose by what the AI or agent can do.
+
+1. **Remote MCP server.** Preferred for chat apps and agents with MCP support.
+   - Server URL: `https://mcp.penfield.app` (root path, no `/mcp` or `/sse`)
+   - Transport: streamable HTTP
+   - Authentication: OAuth 2.1 with PKCE. The client registers itself (dynamic client registration) and the user signs in to Penfield in a browser. API keys are not accepted by the MCP server.
+   - Apps call this a connector, custom connector, plugin, app or MCP server.
+2. **mcp-remote bridge.** For apps that only start local MCP servers or cannot do the OAuth sign-in: `npx -y mcp-remote https://mcp.penfield.app/`
+3. **REST API.** For scripts, backends and agents without MCP.
+   - Base URL: `https://api.penfield.app/api/v2`
+   - API key exchange: `POST /api/v2/auth/token` with `Authorization: Bearer <API key>` returns an access token (24 hours) and a refresh token. All other calls take `Authorization: Bearer <access token>`.
+   - OAuth device code flow (RFC 8628) for command-line and headless tools, and authorization code with PKCE for apps with a browser. Endpoints are discovered at `https://api.penfield.app/.well-known/oauth-authorization-server`.
+   - Scopes: `read`, `write`, `delete`, `profile`, `offline_access`. Deleting needs `delete`.
+
+Users create accounts and API keys, upload documents and set the personality at https://portal.penfield.app.
+
+## MCP tools
+
+The MCP server offers 17 tools.
+
+- `awaken`: load the user's persona and custom instructions. Call it first in every new conversation.
+- `store`: save a memory. The memory type is detected from the content.
+- `recall`: hybrid search over memories and documents, with tag, date and source filters.
+- `search`: the same search as `recall`, in the citation format that ChatGPT connectors require.
+- `fetch`: get one memory by id, in citation format.
+- `update_memory`: change the content, importance or tags of a memory.
+- `connect`: create a relationship between two memories.
+- `disconnect`: remove a relationship between two memories.
+- `explore`: traverse the knowledge graph from a memory.
+- `save_context`: save a named checkpoint with a narrative description.
+- `restore_context`: load a checkpoint by name.
+- `list_contexts`: list saved checkpoints.
+- `reflect`: analyze recent memories for topics and patterns.
+- `save_artifact`: save a file at a path.
+- `retrieve_artifact`: read a file by path.
+- `list_artifacts`: list one folder.
+- `delete_artifact`: delete a file by path.
+
+There is no MCP tool that deletes a memory. Memories are deleted through the REST API or the portal.
+
+## Guidance for an AI that uses Penfield
+
+- Call `awaken` at the start of each conversation and follow the briefing it returns.
+- Call `recall` before answering anything that may depend on earlier conversations.
+- Call `store` when something is worth keeping: a decision, a fact about the user or their work, a correction, an insight. Write complete, self-contained thoughts. Add tags (lowercase letters, digits and hyphens, up to 50 characters).
+- After storing, call `connect` to link the new memory to related ones. Links make later recall better.
+- To fix a memory, call `update_memory`. Do not store a second, corrected copy.
+- Call `save_context` at milestones and before a handoff. Refer to key memories in the description as `memory_id: <uuid>`.
+- Use artifacts for code and long documents. Because artifacts are not searched, also store a short memory with a description of the file and its exact path.
+- Importance does not change search ranking. It is used for filtering and sorting.
+- Content longer than 10,000 characters does not fit in one memory. Split it, store it as an artifact with a pointer memory, or have the user upload it as a document.
+
+## Getting started
+
+- [Penfield documentation home](https://docs.penfield.app/): what Penfield is and the five setup steps, from creating an account and configuring the AI personality to connecting an AI
+- [Install Prompt](https://docs.penfield.app/install-prompt/): a prompt a user pastes into an AI so the AI can work out how to connect
+- [Quick Reference](https://docs.penfield.app/onboarding/penfield-user-quick-reference/): how people use Penfield day to day, with example phrases
+- [Example Custom Instructions](https://docs.penfield.app/onboarding/example-custom-instructions/): a starter template for personalizing an assistant
+
+## Setup guides by platform
+
+- [ChatGPT](https://docs.penfield.app/onboarding/chatgpt-setup/): add Penfield as a custom MCP plugin in ChatGPT
+- [Claude](https://docs.penfield.app/onboarding/claude-setup/): add Penfield as a custom connector in Claude
+- [Claude Code](https://docs.penfield.app/onboarding/claude-code-setup/): connect Claude Code in the terminal
+- [Grok](https://docs.penfield.app/onboarding/grok-setup/): add Penfield as a custom connector in Grok
+- [Manus](https://docs.penfield.app/onboarding/manus-setup/): connect Manus
+- [MCP Remote](https://docs.penfield.app/onboarding/mcp-remote-setup/): Cursor, Windsurf, Gemini CLI, Antigravity, LM Studio and other apps configured with a file
+- [Perplexity](https://docs.penfield.app/onboarding/perplexity-setup/): connect Perplexity and the Comet browser
+- [Other MCP Clients](https://docs.penfield.app/onboarding/other-clients/): connection details and generic steps for any MCP client
+- [Troubleshooting](https://docs.penfield.app/onboarding/reconnect-penfield/): check, reconnect and reinstall the connection
+
+## MCP
+
+- [MCP Tool Reference](https://docs.penfield.app/mcp/mcp-integration/): every tool with its parameters, responses and error codes, and the mapping to REST endpoints
+
+## REST API
+
+- [API Overview](https://docs.penfield.app/api/): base URL, concepts, authentication summary, rate limit headers, error format
+- [Quick Start](https://docs.penfield.app/api/guides/quick-start/): first token, first memory, first search, first relationship
+- [Authentication](https://docs.penfield.app/api/endpoints/authentication/): API key exchange, device code flow, authorization code with PKCE, refresh tokens, scopes, discovery
+- [Memories](https://docs.penfield.app/api/endpoints/memories/): create, get, list, update and delete memories
+- [Search](https://docs.penfield.app/api/endpoints/search/): hybrid search, vector search, search stats
+- [Relationships](https://docs.penfield.app/api/endpoints/relationships/): create, list, update, delete, bulk create and graph traversal
+- [Documents](https://docs.penfield.app/api/endpoints/documents/): upload, chunking, list, download, delete
+- [Artifacts](https://docs.penfield.app/api/endpoints/artifacts/): file storage, path rules, and how to make artifacts findable
+- [Analysis](https://docs.penfield.app/api/endpoints/analysis/): reflect, summarize, insights, memory history, contradictions, evolve
+- [Tags](https://docs.penfield.app/api/endpoints/tags/): add, remove and list tags, memories by tag, tag limits
+- [Personality](https://docs.penfield.app/api/endpoints/personality/): personas and custom instruction traits
+- [Awakening](https://docs.penfield.app/api/endpoints/awakening/): the briefing an AI loads at the start of a session
+
+## Guides and reference
+
+- [Best Practices](https://docs.penfield.app/api/guides/best-practices/): what to store, how to tag, how to build the graph
+- [Common Patterns](https://docs.penfield.app/api/guides/common-patterns/): session handoffs, investigations, multi-agent work, documents, artifacts
+- [Memory Types](https://docs.penfield.app/api/guides/memory-types/): the 11 memory types and when to use each
+- [Relationship Types](https://docs.penfield.app/api/guides/relationship-types/): the 24 relationship types and their direction
+- [Error Handling](https://docs.penfield.app/api/guides/error-handling/): error format, codes by HTTP status, retry strategy
+- [Troubleshooting](https://docs.penfield.app/api/guides/troubleshooting/): common problems and fixes
+- [Common Schemas](https://docs.penfield.app/api/schemas/common/): response envelope, pagination, object shapes, timestamp format
+- [Enums](https://docs.penfield.app/api/schemas/enums/): every enumerated value
+
+## Optional
+
+- [cURL Examples](https://docs.penfield.app/api/examples/curl/): one request per endpoint and two shell scripts
+- [Python Examples](https://docs.penfield.app/api/examples/python/): a small client class and usage examples
+- [Source repository](https://github.com/penfieldlabs/docs): the Markdown source of this documentation
+- Support: support@penfield.app
