@@ -21,7 +21,7 @@ How to connect memories to build knowledge graphs.
 
 ## Overview
 
-Penfield supports 24 relationship types organized into 7 categories. Relationships are directional: `from_id` → `to_id`.
+Penfield supports 24 relationship types organized into 8 categories. Relationships are directional: `from_id` → `to_id`.
 
 ---
 

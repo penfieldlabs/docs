@@ -1,94 +1,61 @@
 # Troubleshooting Penfield
 
-Use this guide to diagnose and resolve connection issues with Penfield.
+Use this guide to diagnose and resolve connection issues with Penfield. The steps go from the quickest check to a full reinstall of the connector.
 
 ---
 
 ## Step 1: Verify Penfield Is Connected
 
-Open the chat input menu in Claude and check that **Penfield** appears with the toggle enabled.
+Check that Penfield is turned on for the conversation you are in.
 
-![Penfield connected in chat menu](./img/reconnect-01-penfield-connected.png)
+- **Claude:** open the **+** menu in the chat box and check that Penfield is turned on.
+- **Other apps:** open the connectors, plugins or tools menu of the chat and check that Penfield is listed and enabled. In apps that use mentions, type `@Penfield` before your message.
 
 If Penfield appears and is enabled, your connection is working. Try typing "Penfield Awaken" in a new chat to test.
 
 ---
 
-## Step 2: Reconnect via Manage Connectors
+## Step 2: Sign In Again
 
-If Penfield is missing from the menu, shows as unavailable, is disabled but cannot be re-enabled or otherwise continues to malfunction, click **Manage connectors**.
+If Penfield is listed but its tools fail, or the app says Penfield needs to be connected, sign in again.
 
-![Penfield missing - click Manage connectors](./img/reconnect-02-penfield-missing.png)
+- **Claude:** click **Plugins** in the left sidebar, find Penfield in the list and connect it again.
+- **Other apps:** open the app's connector or plugin settings, find Penfield and choose the option to connect or sign in.
 
-In **Settings > Connectors**, locate Penfield, if Penfield is disconnected, click **Connect**.
-
-![Connectors page showing Penfield disconnected](./img/reconnect-03-connectors-disconnected.png)
-
-When prompted, click **Authorize** to reconnect your Penfield account.
-
-![Authorization prompt](./img/reconnect-04-authorize.png)
+When the Penfield page opens, click **Authorize** to reconnect your Penfield account.
 
 ---
 
-## Step 3: Disconnect and Reconnect
+## Step 3: Remove and Reinstall
 
-If Penfield appears connected but isn't functioning properly, try disconnecting and reconnecting:
-
-1. Go to **Settings > Connectors**
-2. Click the menu button (**⋯**) next to Penfield
-3. Select **Disconnect**
-
-![Disconnect option in menu](./img/reconnect-05-disconnect-menu.png)
-
-4. After disconnecting, click **Connect** to re-establish the connection
-
-![Reconnect Penfield](./img/reconnect-06-reconnect.png)
-
----
-
-## Step 4: Remove and Reinstall
-
-If reconnecting doesn't resolve the issue, remove and reinstall the Penfield connector:
+If signing in again doesn't resolve the issue, remove the Penfield connector and add it again.
 
 ### Remove the existing connector
 
-1. Go to **Settings > Connectors**
-2. Click the menu button (**⋯**) next to Penfield
-3. Select **Disconnect**
-4. Select **Remove**
-
-![Select Disconnect from the menu](./img/reconnect-05-disconnect-menu.png)
-
-![Select Remove from the menu](./img/reconnect-07-remove.png)
+- **Claude:** click **Plugins** in the left sidebar, find Penfield in the list and remove it.
+- **Other apps:** remove or uninstall Penfield in the app's connector or plugin settings.
 
 ### Add the connector again
 
-5. Click **Add custom connector**
+Follow the setup guide for your app from the start:
 
-![Click Add custom connector](./img/reconnect-08-connectors.png)
+- [Claude Setup](claude-setup.md)
+- [ChatGPT Setup](chatgpt-setup.md)
+- [Claude Code Setup](claude-code-setup.md)
+- [Grok Setup](grok-setup.md)
+- [Manus Setup](manus-setup.md)
+- [MCP Remote Setup](mcp-remote-setup.md)
+- [Perplexity Setup](perplexity-setup.md)
+- [Other MCP Clients](other-clients.md)
 
-6. In the dialog, enter the connector details:
-
-![Empty Add custom connector dialog](./img/reconnect-09-connector-dialog-empty.png)
+The connector details are always the same:
 
 | Field | Value |
 |-------|-------|
 | **Name** | `Penfield` |
-| **Remote MCP server URL** | `https://mcp.penfield.app` |
+| **Server URL** | `https://mcp.penfield.app` |
 
-7. Click **Add**
-
-![Filled connector dialog with Penfield details](./img/reconnect-10-connector-dialog-filled.png)
-
-### Connect and authorize
-
-8. Click **Connect** next to the newly added Penfield connector
-
-![Click Connect next to Penfield](./img/reconnect-11-connect.png)
-
-9. Click **Authorize** to grant Penfield access to your workspace
-
-![Click Authorize to complete setup](./img/reconnect-12-authorize.png)
+Removing and re-adding the connector does not affect your memories. They are stored in your Penfield account, not in the AI app.
 
 ---
 

@@ -17,7 +17,7 @@ Penfield is a persistent memory and knowledge graph system for AI assistants.
 
 **Documents** you upload get chunked and embedded for search. Each chunk becomes searchable alongside your memories.
 
-**Artifacts** are files you create and store—notes, diagrams, code snippets. Unlike memories, they're organized by path (`/project/notes.md`) rather than searched semantically.
+**Artifacts** are files you create and store: code, long notes, diagrams, anything too large for a single memory. They live in a folder tree and are read back by path (`/project/notes.md`). Artifacts are not searched. To make one findable, store a memory that describes the file and gives its path. See [Artifacts](endpoints/artifacts.md).
 
 **Hybrid Search** combines three methods: BM25 (keyword matching), vector similarity (semantic meaning), and graph expansion (following relationships). This finds relevant memories even when your query doesn't match exact words.
 
@@ -45,6 +45,8 @@ Penfield is a persistent memory and knowledge graph system for AI assistants.
 - [Artifacts](endpoints/artifacts.md) - File storage
 - [Analysis](endpoints/analysis.md) - Memory analysis tools
 - [Tags](endpoints/tags.md) - Tag management
+- [Personality](endpoints/personality.md) - Personas and custom instructions
+- [Awakening](endpoints/awakening.md) - The briefing an AI loads at the start of a session
 
 ### Integration
 - [MCP Integration](../mcp/mcp-integration.md) - Model Context Protocol tools
@@ -91,7 +93,7 @@ curl -X POST https://api.penfield.app/api/v2/auth/token \
   "data": {
     "access_token": "eyJhbGciOiJIUzI1NiIs...",
     "token_type": "Bearer",
-    "expires_in": 259200,
+    "expires_in": 86400,
     "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
   }
 }
@@ -218,19 +220,29 @@ Rate limits may be enforced.
   "status": "error",
   "error": {
     "code": "RES_NOT_FOUND",
-    "message": "Memory not found"
-  }
+    "message": "Memory with id '550e8400-e29b-41d4-a716-446655440000' not found",
+    "details": {
+      "resource_type": "Memory",
+      "resource_id": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    "field_errors": null
+  },
+  "meta": {...}
 }
 ```
 
 | Code | Status | Description |
 |------|--------|-------------|
-| `AUTH_INVALID_CREDENTIALS` | 401 | Invalid credentials |
-| `AUTH_TOKEN_EXPIRED` | 401 | Token expired |
+| `AUTH_UNAUTHORIZED` | 401 | Missing or invalid token or API key |
 | `AUTH_INSUFFICIENT_PERMISSIONS` | 403 | Missing required scope |
-| `VAL_VALIDATION_FAILED` | 422 | Validation failed |
+| `AUTH_FORBIDDEN` | 403 | Protected memory type |
+| `VAL_VALIDATION_FAILED` | 422 | Request body or parameters are not valid (see `field_errors`) |
+| `VAL_VALIDATION_FAILED` | 400 | The request is well formed but breaks a rule (the message says which) |
 | `RES_NOT_FOUND` | 404 | Resource not found |
 | `BIZ_RATE_LIMIT_EXCEEDED` | 429 | Rate limited |
+| `SYS_INTERNAL_ERROR` | 500 | Server-side error |
+
+See [Error Handling](guides/error-handling.md) for the full list.
 
 ---
 

@@ -17,7 +17,7 @@ pip install httpx  # or requests
 ```python
 import httpx
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 
 class PenfieldClient:
@@ -41,7 +41,7 @@ class PenfieldClient:
         if self._token_expires is None:
             return True
         # Refresh 5 minutes before expiry
-        return datetime.utcnow() >= self._token_expires
+        return datetime.now(timezone.utc) >= self._token_expires
 
     def _authenticate(self) -> None:
         """Exchange API key for JWT token."""
@@ -53,8 +53,7 @@ class PenfieldClient:
         data = response.json()["data"]
         self._token = data["access_token"]
         # Parse expiry (expires_in is seconds)
-        from datetime import timedelta
-        self._token_expires = datetime.utcnow() + timedelta(
+        self._token_expires = datetime.now(timezone.utc) + timedelta(
             seconds=data["expires_in"] - 300  # 5 min buffer
         )
 
@@ -146,7 +145,8 @@ class PenfieldClient:
         query: str,
         limit: int = 20,
         memory_types: Optional[List[str]] = None,
-        importance_threshold: Optional[float] = None
+        importance_threshold: Optional[float] = None,
+        source_types: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """Perform hybrid search."""
         payload = {
@@ -160,6 +160,8 @@ class PenfieldClient:
             payload["memory_types"] = memory_types
         if importance_threshold:
             payload["importance_threshold"] = importance_threshold
+        if source_types:
+            payload["source_types"] = source_types
         return self._request("POST", "/search/hybrid", json=payload)
 
     # Relationship operations
@@ -314,10 +316,12 @@ graph = client.traverse_graph(
     direction="OUTBOUND"
 )
 
+# Paths hold memory UUIDs; node_details has a preview of each memory
+details = graph["data"]["node_details"]
 for path in graph["data"]["paths"]:
     print(f"Path score: {path['total_score']}")
-    for node in path["nodes"]:
-        print(f"  - {node['content'][:40]}...")
+    for node_id in path["nodes"]:
+        print(f"  - {details[node_id]['preview'][:40]}...")
 ```
 
 ### Document Upload

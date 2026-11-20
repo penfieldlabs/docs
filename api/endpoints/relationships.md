@@ -60,21 +60,23 @@ POST https://api.penfield.app/api/v2/relationships
 
 ### Response
 
+`201 Created`
+
 ```json
 {
   "status": "success",
   "data": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "id": "770e8400-e29b-41d4-a716-446655440002",
     "from_id": "550e8400-e29b-41d4-a716-446655440000",
     "to_id": "660f9500-f30c-52e5-b827-557766551111",
     "relationship_type": "supports",
     "direction_type": "DIRECTED",
     "strength": 0.8,
     "confidence": 0.9,
-    "evidence": {"reason": "Both discuss async patterns"},
+    "evidence": {"reason": "Both discuss async patterns", "source": "manual_connection"},
     "metadata": {},
-    "created_at": "2025-01-06T12:00:00.000Z",
-    "updated_at": "2025-01-06T12:00:00.000Z"
+    "created_at": "2026-01-06T12:00:00.953480Z",
+    "updated_at": "2026-01-06T12:00:00.953480Z"
   },
   "meta": {...}
 }
@@ -84,10 +86,33 @@ POST https://api.penfield.app/api/v2/relationships
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 422 | `VAL_VALIDATION_FAILED` | Invalid relationship data |
-| 422 | `VAL_FIELD_REQUIRED` | `inverse_type` required for `INVERSE_PAIRED` |
-| 404 | `RES_NOT_FOUND` | Source or target memory not found |
-| 409 | `RES_ALREADY_EXISTS` | Relationship already exists |
+| 400 | `VAL_VALIDATION_FAILED` | The request is well formed but the relationship cannot be created. `error.details.errors` gives the reason (see below) |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
+| 422 | `VAL_VALIDATION_FAILED` | Invalid request body, such as an unknown `relationship_type` or `direction_type` (see `error.field_errors`) |
+
+Reasons returned with a 400:
+
+| `details.errors` entry | Cause |
+|------------------------|-------|
+| `Relationship supports already exists between these memories` | The same relationship already exists |
+| `Target memory {id} not found` | The source or target memory does not exist |
+| `Cannot create relationship from memory to itself` | `from_id` and `to_id` are the same |
+| `INVERSE_PAIRED relationships require inverse_type` | `direction_type` is `INVERSE_PAIRED` and `inverse_type` is missing |
+
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "VAL_VALIDATION_FAILED",
+    "message": "Relationship validation failed",
+    "details": {
+      "errors": ["Relationship supports already exists between these memories"]
+    },
+    "field_errors": null
+  },
+  "meta": {...}
+}
+```
 
 ### Example
 
@@ -174,12 +199,13 @@ GET https://api.penfield.app/api/v2/relationships
         "from_id": "memory-uuid-1",
         "to_id": "memory-uuid-2",
         "relationship_type": "supports",
+        "direction_type": "DIRECTED",
         "strength": 0.8,
         "confidence": 0.9,
         "evidence": {},
         "metadata": {},
-        "created_at": "2025-01-06T12:00:00.000Z",
-        "updated_at": "2025-01-06T12:00:00.000Z"
+        "created_at": "2026-01-06T12:00:00.953480Z",
+        "updated_at": "2026-01-06T12:00:00.953480Z"
       }
     ],
     "pagination": {
@@ -255,7 +281,7 @@ HTTP 204 No Content
 
 ### Notes
 
-- **Requires `delete` permission** on your API key.
+- **Requires the `delete` scope.**
 - For `INVERSE_PAIRED` relationships, you need to delete both relationships separately
 - Deleting a relationship does not affect the connected memories
 
@@ -284,13 +310,15 @@ HTTP 204 No Content
 
 ### Notes
 
-- **Requires `delete` permission** on your API key.
+- **Requires the `delete` scope.**
+- Direction matters: pass `from_id` and `to_id` the way the relationship was created. With the two ids swapped the call returns 404
+- Each call removes one relationship. If the two memories are linked by several relationships, repeat the call, or delete a specific one by ID with [Delete Relationship](#delete-relationship)
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 404 | `RES_NOT_FOUND` | No relationship exists between these memories |
+| 404 | `RES_NOT_FOUND` | No relationship exists from `from_id` to `to_id` |
 
 ---
 
@@ -323,6 +351,8 @@ POST https://api.penfield.app/api/v2/relationships/bulk
 
 ### Response
 
+`201 Created`
+
 ```json
 {
   "status": "success",
@@ -341,7 +371,7 @@ POST https://api.penfield.app/api/v2/relationships/bulk
 
 ### Notes
 
-- All relationships must succeed or all are rolled back
+- All relationships must succeed or all are rolled back. If one entry is refused the call returns a 400 error (the message names the entry, `details.index` gives its position) and nothing is created
 - Use for creating complex relationship patterns efficiently
 
 ---
@@ -391,11 +421,12 @@ POST https://api.penfield.app/api/v2/relationships/traverse
         "relationships": [
           "770e8400-e29b-41d4-a716-446655440002"
         ],
-        "total_score": 0.4,
+        "total_score": 0.855,
         "path_metadata": {
           "depth": 1,
           "start_node": "550e8400-e29b-41d4-a716-446655440000",
-          "direction": "ANY"
+          "direction": "OUTBOUND",
+          "filtered_types": ["supports", "references"]
         }
       }
     ],
@@ -403,8 +434,30 @@ POST https://api.penfield.app/api/v2/relationships/traverse
       "550e8400-e29b-41d4-a716-446655440000",
       "660f9500-f30c-52e5-b827-557766551111"
     ],
-    "max_depth_reached": 2,
-    "total_paths_found": 8
+    "max_depth_reached": 1,
+    "total_paths_found": 1,
+    "node_details": {
+      "550e8400-e29b-41d4-a716-446655440000": {
+        "preview": "Python async programming uses asyncio",
+        "type": "fact",
+        "importance": 0.8,
+        "tags": ["async", "python"]
+      },
+      "660f9500-f30c-52e5-b827-557766551111": {
+        "preview": "asyncio enables concurrent I/O in one thread",
+        "type": "insight",
+        "importance": 0.5,
+        "tags": ["python"]
+      }
+    },
+    "relationship_details": {
+      "770e8400-e29b-41d4-a716-446655440002": {
+        "type": "supports",
+        "strength": 0.9,
+        "from_id": "550e8400-e29b-41d4-a716-446655440000",
+        "to_id": "660f9500-f30c-52e5-b827-557766551111"
+      }
+    }
   },
   "meta": {...}
 }
@@ -417,11 +470,22 @@ POST https://api.penfield.app/api/v2/relationships/traverse
 | `paths` | Array of paths found during traversal |
 | `paths[].nodes` | Array of memory UUIDs in the path |
 | `paths[].relationships` | Array of relationship UUIDs connecting the nodes |
-| `paths[].total_score` | Combined score for the path |
-| `paths[].path_metadata` | Metadata about the path |
+| `paths[].total_score` | Combined score for the path (`0.0` when `include_scores` is false) |
+| `paths[].path_metadata` | Metadata about the path: `depth`, `start_node`, `direction`, and `filtered_types` when `relationship_types` was sent |
 | `visited_chunks` | Array of all memory UUIDs visited during traversal |
 | `max_depth_reached` | Actual maximum depth traversed |
 | `total_paths_found` | Total number of paths discovered |
+| `node_details` | One entry per memory UUID in the paths: `preview` (start of the content), `type` (memory type), `importance`, `tags` |
+| `relationship_details` | One entry per relationship UUID in the paths: `type`, `strength`, `from_id`, `to_id` |
+
+`paths[].nodes` and `paths[].relationships` hold UUIDs only. Look the UUIDs up in `node_details` and `relationship_details` to show content without further requests.
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 404 | `RES_NOT_FOUND` | `start_memory_id` does not exist |
+| 422 | `VAL_VALIDATION_FAILED` | Invalid request body (`direction` values are upper case; `max_depth` is 1-10) |
 
 ### Traversal Directions
 
@@ -435,7 +499,7 @@ POST https://api.penfield.app/api/v2/relationships/traverse
 
 ## Relationship Types
 
-All 24 relationship types are working as of 2026-01-22.
+There are 24 relationship types in 8 categories.
 
 ### Knowledge Evolution
 

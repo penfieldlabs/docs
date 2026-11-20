@@ -54,7 +54,7 @@ See [Memory Types Guide](./memory-types.md) for all 11 types.
 0.1-0.2: Ephemeral data, temporary notes
 ```
 
-Higher importance = more likely to appear in search results.
+Importance does not change the order of search results. Use it to filter and sort: `importance_threshold` in search and in the memory list, `sort=-importance` in the memory list, and `importance_weight` in [Reflect](../endpoints/analysis.md#reflect).
 
 ### Use Tags Consistently
 
@@ -62,7 +62,7 @@ Create a tag taxonomy and stick to it:
 
 ```
 # Project tags
-project:penfield, project:webapp
+project-penfield, project-webapp
 
 # Type tags
 bug, feature, research, meeting
@@ -74,6 +74,8 @@ resolved, pending, blocked
 python, api, database
 ```
 
+Tags may contain only `a-z`, `0-9` and `-`. Other characters are removed, so `project:penfield` is stored as `projectpenfield`. Use a hyphen as the separator.
+
 ---
 
 ## Knowledge Graph
@@ -81,7 +83,7 @@ python, api, database
 ### Always Connect Related Memories
 
 After storing a memory, ask yourself:
-1. Does this update or correct something? → `supersedes`, `updates`, `correction`
+1. Does this update or correct something? → `supersedes`, `updates`
 2. Does this provide evidence? → `supports`, `contradicts`
 3. Is this an example of something? → `example_of`, `implements`
 4. What came before/after? → `follows`, `precedes`
@@ -124,6 +126,8 @@ This memory will match searches for: "authentication", "OAuth", "PKCE", "tokens"
 
 ### Use Source Type Filters
 
+Through the MCP `recall` tool:
+
 ```json
 {
   "query": "API documentation",
@@ -138,13 +142,22 @@ This memory will match searches for: "authentication", "OAuth", "PKCE", "tokens"
 }
 ```
 
+Through the REST API the field is `source_types`, an array of [source type values](../endpoints/search.md#sourcetype-values):
+
+```json
+{
+  "query": "API documentation",
+  "source_types": ["document_upload"]
+}
+```
+
 ### Use Date Filters for Time-Sensitive Queries
 
 ```json
 {
   "query": "project updates",
-  "start_date": "2025-01-01",
-  "end_date": "2025-01-31"
+  "start_date": "2026-01-01",
+  "end_date": "2026-01-31"
 }
 ```
 
@@ -271,7 +284,8 @@ if memory_type not in VALID_TYPES:
 
 Request only the scopes you need:
 - `read` - Read memories, search
-- `write` - Create, update, delete memories
+- `write` - Create and update memories, relationships, documents and artifacts
+- `delete` - Delete memories, relationships, documents and artifacts
 - `profile` - Access user profile information
 - `offline_access` - Get refresh tokens (OAuth flows)
 
@@ -298,6 +312,8 @@ Request only the scopes you need:
   "max_depth": 2  // Deep traversals are expensive
 }
 ```
+
+This is the MCP `explore` form. In the REST API ([Graph Traversal](../endpoints/relationships.md#graph-traversal)) the field is `start_memory_id`.
 
 ### Cache Frequently Accessed Data
 

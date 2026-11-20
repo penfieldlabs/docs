@@ -59,16 +59,18 @@ markdown_extensions:
 nav:
   - Home: README.md
   - Getting Started:
-    - Setup Guide: onboarding/penfield-setup-guide.md
     - Quick Reference: onboarding/penfield-user-quick-reference.md
     - Example Custom Instructions: onboarding/example-custom-instructions.md
   - Platform Setup:
     - Overview: onboarding/README.md
+    - Claude: onboarding/claude-setup.md
     - ChatGPT: onboarding/chatgpt-setup.md
     - Claude Code: onboarding/claude-code-setup.md
+    - Grok: onboarding/grok-setup.md
     - Manus: onboarding/manus-setup.md
     - MCP Remote (Cursor, Windsurf, etc.): onboarding/mcp-remote-setup.md
     - Perplexity: onboarding/perplexity-setup.md
+    - Others: onboarding/other-clients.md
     - Reconnecting: onboarding/reconnect-penfield.md
   - MCP Integration:
     - Tool Reference: mcp/mcp-integration.md

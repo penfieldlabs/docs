@@ -96,14 +96,15 @@ The `source_types` field accepts an array of source type strings:
         "id": "550e8400-e29b-41d4-a716-446655440000",
         "content": "Python async programming uses asyncio...",
         "snippet": "Python async programming uses asyncio for concurrent...",
-        "score": 0.95,
+        "score": 0.71,
         "score_breakdown": {
-          "final_score": 0.95,
-          "bm25_score": 0.85,
-          "vector_score": 0.92,
-          "graph_score": 0.7,
+          "final_score": 0.71,
+          "bm25_score": 24.51,
+          "vector_score": 0.78,
+          "graph_score": 0.4,
           "rank_bm25": 1.0,
-          "rank_vector": 2.0
+          "rank_vector": 1.0,
+          "rank_graph": 2.0
         },
         "metadata": {
           "memory_type": "fact",
@@ -112,19 +113,23 @@ The `source_types` field accepts an array of source type strings:
           "graph_context": {
             "relationships": [
               {
-                "to_id": "...",
                 "type": "supports",
-                "strength": 0.8
+                "from_id": "550e8400-e29b-41d4-a716-446655440000",
+                "to_id": "660f9500-f30c-52e5-b827-557766551111",
+                "depth": 1,
+                "path_score": 0.8,
+                "direction": "outgoing"
               }
             ],
-            "relationship_count": 3
+            "relationship_count": 1
           }
         },
         "source_type": "direct_input",
-        "created_at": "2025-01-06T12:00:00.000Z",
-        "content_with_context": "...",
-        "chunk_index": 0,
-        "total_chunks": 1
+        "created_at": "2026-01-06T12:00:00.162108Z",
+        "tags": ["async", "python"],
+        "content_with_context": null,
+        "chunk_index": null,
+        "total_chunks": null
       }
     ],
     "query": "Python async programming best practices",
@@ -142,19 +147,40 @@ The `source_types` field accepts an array of source type strings:
       "search_method": "hybrid",
       "results_count": 20,
       "stats": {
-        "search_time_ms": 45,
-        "bm25_time_ms": 12,
-        "vector_time_ms": 15,
-        "graph_time_ms": 10,
-        "fusion_time_ms": 3,
+        "search_time_ms": 200,
+        "result_count": 20,
         "bm25_count": 40,
+        "bm25_time_ms": 115,
         "vector_count": 40,
+        "vector_time_ms": 115,
         "graph_count": 15,
-        "final_count": 20
+        "graph_time_ms": 81,
+        "fusion_time_ms": 1,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "total_candidates": 95,
+        "filtered_count": 0,
+        "knowledge_cloud_time_ms": 16,
+        "cloud_expanded_count": 7
       },
       "knowledge_cloud": {
-        "nodes": [...],
-        "edges": [...],
+        "nodes": [
+          {
+            "id": "550e8400-e29b-41d4-a716-446655440000",
+            "label": "Python async programming uses asyncio...",
+            "type": "seed",
+            "memory_type": "fact",
+            "importance": 0.8
+          }
+        ],
+        "edges": [
+          {
+            "from": "550e8400-e29b-41d4-a716-446655440000",
+            "to": "660f9500-f30c-52e5-b827-557766551111",
+            "type": "supports",
+            "weight": 0.8
+          }
+        ],
         "stats": {
           "seed_count": 5,
           "cloud_count": 12,
@@ -174,24 +200,27 @@ The `source_types` field accepts an array of source type strings:
 | `items[].id` | Memory UUID |
 | `items[].content` | Full memory content |
 | `items[].snippet` | Truncated content (~200 chars) |
-| `items[].score` | Combined relevance score |
-| `items[].score_breakdown` | Individual component scores |
-| `items[].content_with_context` | Document chunks with neighbors (if applicable) |
-| `items[].chunk_index` | Position in parent document (if from document) |
-| `items[].total_chunks` | Total chunks in parent document |
-| `search_metadata.stats` | Performance timing data |
-| `search_metadata.knowledge_cloud` | Graph visualization data |
+| `items[].score` | Combined relevance score (same as `score_breakdown.final_score`) |
+| `items[].score_breakdown` | Individual component scores. `vector_score` and `graph_score` are 0-1. `bm25_score` is the raw BM25 score and is not capped at 1. A `rank_bm25`, `rank_vector` or `rank_graph` field is present for each method that returned the item |
+| `items[].metadata.graph_context` | The relationships that graph expansion followed to or from this item. Absent on items the graph expansion did not touch |
+| `items[].tags` | Array of tag names |
+| `items[].content_with_context` | Document chunks with neighbors (`null` for items that are not document chunks) |
+| `items[].chunk_index` | Position in parent document (`null` unless the item is a document chunk) |
+| `items[].total_chunks` | Total chunks in parent document (`null` unless the item is a document chunk) |
+| `search_metadata.results_count` | Number of items returned |
+| `search_metadata.stats` | Performance timing data and candidate counts |
+| `search_metadata.knowledge_cloud` | Graph visualization data, or `null` |
 
 ### Knowledge Cloud
 
-When `enable_graph_expansion` is true, the response includes `knowledge_cloud` data for building graph visualizations. See the response example above for the structure.
+`knowledge_cloud` holds data for building graph visualizations: the `nodes` (memories), the `edges` (relationships between them) and counts. It is `null` when `enable_graph_expansion` is false, and it can also be `null` when the results have no relationships to show. See the response example above for the structure.
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 422 | `VAL_VALIDATION_FAILED` | Weights don't sum to 1.0 |
-| 422 | `VAL_FIELD_REQUIRED` | Missing query |
+| 400 | `VAL_VALIDATION_FAILED` | Weights don't sum to 1.0 (`Search weights must sum to 1.0 (current sum: 1.5)`). If you set one weight, set all three |
+| 422 | `VAL_VALIDATION_FAILED` | Missing `query`, or a field has the wrong type (`error.field_errors` says which). `tags` must be a comma-separated string, not an array |
 
 ### Examples
 
@@ -294,16 +323,16 @@ POST https://api.penfield.app/api/v2/search/vector
           "importance": 0.8,
           "confidence": 0.9,
           "source_type": "direct_input",
-          "user_id": "user-uuid",
-          "created_at": "2025-01-06T12:00:00.000Z",
-          "updated_at": "2025-01-06T12:00:00.000Z"
+          "user_id": "880e8400-e29b-41d4-a716-446655440003",
+          "created_at": "2026-01-06T12:00:00.162108+00:00",
+          "updated_at": "2026-01-06T12:00:00.394982+00:00"
         },
         "source_type": "direct_input",
-        "created_at": "2025-01-06T12:00:00.000Z",
-        "tags": ["python", "async"],
-        "content_with_context": "...",
-        "chunk_index": 0,
-        "total_chunks": 1
+        "created_at": "2026-01-06T12:00:00.162108Z",
+        "tags": ["async", "python"],
+        "content_with_context": null,
+        "chunk_index": null,
+        "total_chunks": null
       }
     ],
     "query": "semantic meaning of async programming",
@@ -354,7 +383,7 @@ Understanding when to use each search type:
 | **Search Methods** | BM25 + Vector + Graph | Vector only |
 | **Use Case** | General search, best quality | Semantic similarity |
 | **Latency** | Higher (3 methods + fusion) | Lower (1 method) |
-| **score_breakdown** | `bm25_score`, `vector_score`, `graph_score`, `final_score`, `rank_vector` | `vector_similarity` only |
+| **score_breakdown** | `final_score`, `bm25_score`, `vector_score`, `graph_score`, plus a `rank_*` field per matching method | `vector_similarity` only |
 | **Graph Expansion** | Optional (enabled by default) | Not available |
 | **Knowledge Cloud** | Included in response | Not included |
 | **Timing Stats** | Detailed breakdown | Simple count |
@@ -365,11 +394,13 @@ Understanding when to use each search type:
 **Hybrid Search:**
 ```json
 {
-  "final_score": 0.95,
-  "bm25_score": 0.85,
-  "vector_score": 0.92,
-  "graph_score": 0.7,
-  "rank_vector": 2.0
+  "final_score": 0.71,
+  "bm25_score": 24.51,
+  "vector_score": 0.78,
+  "graph_score": 0.4,
+  "rank_bm25": 1.0,
+  "rank_vector": 1.0,
+  "rank_graph": 2.0
 }
 ```
 
@@ -443,7 +474,7 @@ GET https://api.penfield.app/api/v2/search/stats
     "total_documents": 1,
     "total_relationships": 54,
     "embedding_coverage": 0.92,
-    "last_indexed": "2025-01-06T12:00:00.000Z"
+    "last_indexed": "2026-01-06T12:00:00.277309Z"
   },
   "meta": {...}
 }

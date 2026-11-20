@@ -5,88 +5,85 @@ Connect Penfield to ChatGPT to enable persistent memory and personality features
 ## Prerequisites
 
 - A Penfield account ([sign up here](https://portal.penfield.app/sign-up) if you haven't already)
-- A ChatGPT account (Free or Plus)
+- A ChatGPT account. A free account works
 
 ---
 
-## Step 1: Open ChatGPT Settings
+## Step 1: Open Plugins
 
-Click your name in the bottom-left corner of ChatGPT, then click **Settings**.
+Click **Plugins** in the left sidebar of ChatGPT.
 
-![Click your name then Settings](./img/chatgpt-01-open-settings.png)
-
----
-
-## Step 2: Navigate to Apps
-
-Click **Apps** in the left sidebar, then click **Create app** next to Advanced settings.
-
-![Apps page with Create app button](./img/chatgpt-02-apps-create.png)
+![Plugins in the ChatGPT sidebar](./img/chatgpt-01-plugins.png)
 
 ---
 
-## Step 3: Enable Developer Mode
+## Step 2: Add a Custom MCP Server
 
-Toggle **Developer mode** to on.
+Click **Add** in the top-right corner, then click **Add custom MCP server**.
 
-![Developer mode toggle enabled](./img/chatgpt-03-developer-mode.png)
-
----
-
-## Step 4: Open Advanced Settings
-
-Go back to **Apps** in the left sidebar. Click **Advanced settings**.
-
-![Apps page with Advanced settings](./img/chatgpt-04-advanced-settings.png)
+![Add menu with Add custom MCP server](./img/chatgpt-02-add-custom-mcp-server.png)
 
 ---
 
-## Step 5: Create the Penfield App
+## Step 3: Enter the Penfield Details
 
-Fill in the New App form:
+Fill in the Add custom MCP server form:
 
 | Field | Value |
 |-------|-------|
 | **Name** | `Penfield` |
+| **Description (optional)** | `Penfield AI Memory` |
 | **Connection** | Server URL |
 | **Server URL** | `https://mcp.penfield.app` |
 | **Authentication** | OAuth |
 
-Check the **"I understand and want to continue"** box, then click **Create**.
+Optionally, click the **+** next to **Icon** and upload the Penfield logo. You can download it from `https://docs.penfield.app/logo.png`.
 
-![New App form with Penfield configuration](./img/chatgpt-05-new-app-form.png)
-
----
-
-## Step 6: Sign In with Penfield
-
-Click **Sign in with Penfield**.
-
-![Add Penfield to ChatGPT dialog](./img/chatgpt-06-sign-in-penfield.png)
+![Add custom MCP server form with Penfield details](./img/chatgpt-03-server-details.png)
 
 ---
 
-## Step 7: Authorize the Connection
+## Step 4: Create the Plugin
 
-Click **Authorize** to connect your Penfield workspace to ChatGPT.
+Scroll down. Check the **"I understand and want to continue"** box, then click **Create as a plugin**.
 
-![Penfield authorization prompt](./img/chatgpt-07-authorize.png)
+![Acknowledgment checkbox and Create as a plugin button](./img/chatgpt-04-create-as-plugin.png)
 
 ---
 
-## Step 8: Activate Your Assistant
+## Step 5: Continue to Penfield
 
-Start a new conversation in ChatGPT and type:
+Click **Continue to Penfield**.
+
+![Continue to Penfield dialog](./img/chatgpt-05-continue-to-penfield.png)
+
+---
+
+## Step 6: Authorize the Connection
+
+A Penfield page opens. Sign in to your Penfield account if asked, then click **Authorize** to connect your Penfield workspace to ChatGPT.
+
+![Penfield authorization prompt](./img/penfield-authorize.png)
+
+The page looks the same for every app. It names the app you are connecting from.
+
+---
+
+## Step 7: Activate Your Assistant
+
+Start a new chat in ChatGPT and type:
 
 ```
-Penfield Awaken
+@Penfield awaken
 ```
 
-![Typing Penfield Awaken in ChatGPT](./img/chatgpt-08-awaken-input.png)
+Typing `@Penfield` selects the Penfield plugin for the message.
 
-Penfield will load your personality configuration and respond with a personalized greeting.
+![Typing @Penfield awaken in ChatGPT](./img/chatgpt-06-penfield-awaken.png)
 
-![Awaken response showing personality loading](./img/chatgpt-09-awaken-response.png)
+Penfield will load your personality configuration and respond with a personalized greeting. Start each new chat this way.
+
+![Awaken response showing personality loading](./img/chatgpt-07-awaken-reply.png)
 
 ---
 

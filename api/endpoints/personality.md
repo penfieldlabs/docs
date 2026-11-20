@@ -223,13 +223,13 @@ POST https://api.penfield.app/api/v2/personality
 - The persona's identity, voice, quirks, and boundaries are stored as an `identity_core` memory
 - The selected persona must be accessible at the user's tier (see [Tier Hierarchy](#tier-hierarchy))
 - Setting `set_as_org_default` requires `premium` tier or higher
-- **Requires `write` permission** on your API key
+- **Requires the `write` scope**
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 403 | `AUTH_FORBIDDEN` | API key does not have `write` permission |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
 | 403 | — | User's tier does not meet the persona's `tier_required` |
 | 403 | — | `set_as_org_default` requested but user's tier is below `premium` |
 | 404 | `RES_NOT_FOUND` | Persona not found |
@@ -332,13 +332,13 @@ POST https://api.penfield.app/api/v2/personality/traits
 - Traits appear in the [awakening briefing](#get-awakening-briefing) under `CUSTOM INSTRUCTIONS FROM USER:`
 - Stored as `personality_trait` memory type
 - **Requires `premium` tier or higher** (see [Tier Hierarchy](#tier-hierarchy))
-- **Requires `write` permission** on your API key
+- **Requires the `write` scope**
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 403 | `AUTH_FORBIDDEN` | API key does not have `write` permission |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
 | 403 | — | User's tier is below `premium` |
 | 422 | `VAL_VALIDATION_FAILED` | Invalid request body (e.g., empty `content`) |
 
@@ -398,13 +398,13 @@ PUT https://api.penfield.app/api/v2/personality/traits/{trait_id}
 
 - Only the `content` field can be updated; the `category` remains unchanged
 - **Requires `premium` tier or higher** (see [Tier Hierarchy](#tier-hierarchy))
-- **Requires `write` permission** on your API key
+- **Requires the `write` scope**
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 403 | `AUTH_FORBIDDEN` | API key does not have `write` permission |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
 | 403 | — | User's tier is below `premium` |
 | 404 | `RES_NOT_FOUND` | Trait not found or does not belong to user |
 | 422 | `VAL_VALIDATION_FAILED` | Invalid request body (e.g., empty `content`) |
@@ -447,12 +447,12 @@ DELETE https://api.penfield.app/api/v2/personality/traits/{trait_id}
 
 - Deleted traits no longer appear in [Get Personality](#get-personality) or the [awakening briefing](#get-awakening-briefing)
 - **Requires `premium` tier or higher** (see [Tier Hierarchy](#tier-hierarchy))
-- **Requires `delete` permission** on your API key
+- **Requires the `delete` scope**
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 403 | `AUTH_FORBIDDEN` | API key does not have `delete` permission |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `delete` scope |
 | 403 | — | User's tier is below `premium` |
 | 404 | `RES_NOT_FOUND` | Trait not found or does not belong to user |

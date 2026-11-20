@@ -1,6 +1,29 @@
 # Artifacts Endpoints
 
-Store and retrieve user-created content (diagrams, notes, code) with path-based organization.
+Artifacts are file storage for you and your AI: a private folder tree where files are saved, read back, listed and deleted by path.
+
+---
+
+## What Artifacts Are For
+
+A memory is one piece of knowledge and holds up to 10,000 characters. An artifact is a whole file and holds up to 1 MB. Use an artifact when the content is a file rather than a fact:
+
+- **Code** - scripts, modules, configuration files, snippets worth keeping whole
+- **Long documents** - specs, reports, research notes, transcripts, anything past the memory size limit
+- **Structured data** - JSON, YAML and CSV
+- **Diagrams** - SVG and other text-based diagram formats
+- **Templates and working drafts** - PR templates, prompts, checklists, text that gets rewritten over time
+
+| | Memories | Documents | Artifacts |
+|---|----------|-----------|-----------|
+| What it is | A piece of knowledge | A file you upload so it can be searched | A file stored and read back as a file |
+| Size limit | 10,000 characters | 20 MB | 1 MB |
+| Found by search | Yes | Yes, split into chunks | No |
+| Read back whole | Yes | Yes, as a download | Yes, by path |
+| Organized by | Tags and relationships | Document list | Folders and file names |
+| Created through | API and MCP tools | API upload and the portal | API and MCP tools |
+
+**Artifacts are not searched.** Search and recall never return an artifact, its content or its file name. An artifact is reached in two ways: by its path, or by browsing the folder tree. To make an artifact turn up when it is relevant, store a memory that describes it and gives its path. See [Making Artifacts Findable](#making-artifacts-findable).
 
 ---
 
@@ -39,8 +62,8 @@ POST https://api.penfield.app/api/v2/artifacts
 
 - Must start with `/`
 - Must specify a filename (not just a directory)
-- Maximum 10 levels deep
-- Valid characters: alphanumeric, dash, underscore, dot, slash
+- Maximum 10 folders deep (the file name does not count)
+- Valid characters: letters `A-Z` and `a-z`, digits, dash, underscore, dot, slash. Spaces and other characters are refused
 - No `..` (path traversal)
 - No hidden files (starting with `.`)
 - No double slashes
@@ -51,7 +74,7 @@ POST https://api.penfield.app/api/v2/artifacts
 /readme.md
 /project/docs/api.md
 /diagrams/architecture.svg
-/notes/2025/january/meeting.md
+/notes/2026/january/meeting.md
 ```
 
 ### Invalid Path Examples
@@ -97,13 +120,18 @@ readme.md          # Missing leading /
 
 ### Size Limits
 
-- Maximum artifact size: 1MB
+- Maximum artifact size: 1MB (1,048,576 bytes, counted on the UTF-8 encoded content)
+
+### Saving Does Not Overwrite
+
+A path can hold one artifact. Saving to a path that already exists is refused with `409`. To change a file, [delete](#delete-artifact) it and save the new content, or save the new version under a new path.
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 400 | - | Invalid path format |
+| 400 | `VAL_VALIDATION_FAILED` | Invalid path format (the message says which rule) |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
 | 409 | - | Artifact already exists at path |
 | 413 | - | Content exceeds 1MB limit |
 
@@ -151,8 +179,6 @@ GET https://api.penfield.app/api/v2/artifacts?path={path}
 }
 ```
 
-> **Note:** Due to a known issue, `.md` files may currently return `text/plain` instead of `text/markdown`. See the known issue note below.
-
 ### Response Fields
 
 | Field | Description |
@@ -160,17 +186,15 @@ GET https://api.penfield.app/api/v2/artifacts?path={path}
 | `success` | Boolean indicating operation success |
 | `content` | The artifact content |
 | `path` | The artifact path |
-| `content_type` | MIME type of the content (see known issue below) |
+| `content_type` | MIME type of the content |
 | `size` | Content size in bytes |
-
-> **Known Issue:** Some file extensions (including `.md`) may return an incorrect `content_type` on retrieve. For example, `.md` files may return `text/plain` instead of `text/markdown`. Use the file extension from the `path` field as a reliable alternative until this is resolved.
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 400 | - | Invalid path format |
-| 404 | - | Artifact not found |
+| 400 | `VAL_VALIDATION_FAILED` | Invalid path format |
+| 404 | `RES_NOT_FOUND` | Artifact not found |
 
 ### Example
 
@@ -210,13 +234,13 @@ GET https://api.penfield.app/api/v2/artifacts/list?prefix={prefix}
         "name": "readme.md",
         "size": 2048,
         "content_type": "text/markdown",
-        "last_modified": "2025-01-06T12:00:00.000Z"
+        "last_modified": "2026-01-06T12:00:00.531000+00:00"
       },
       {
         "name": "notes.txt",
         "size": 512,
         "content_type": "text/plain",
-        "last_modified": "2025-01-05T10:00:00.000Z"
+        "last_modified": "2026-01-05T10:00:00.411000+00:00"
       }
     ]
   },
@@ -289,15 +313,17 @@ DELETE https://api.penfield.app/api/v2/artifacts?path={path}
 ### Notes
 
 - This operation is permanent and cannot be undone
-- Any memories you created that reference this artifact path will not be affected — delete those separately if needed
-- Parent directories are not deleted (even if empty)
+- **Requires the `delete` scope**
+- Any memories you created that reference this artifact path will not be affected - update or delete those separately
+- A folder is no longer listed once it has no files left in it
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 400 | - | Invalid path format |
-| 404 | - | Artifact not found |
+| 400 | `VAL_VALIDATION_FAILED` | Invalid path format |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `delete` scope |
+| 404 | `RES_NOT_FOUND` | Artifact not found |
 
 ---
 
@@ -315,12 +341,12 @@ Content types are automatically detected based on file extension:
 | `.js` | `application/javascript` |
 | `.py` | `text/x-python` |
 | `.svg` | `image/svg+xml` |
-| `.xml` | `application/xml` |
-| `.yaml`, `.yml` | `application/x-yaml` |
+| `.xml` | `text/xml` |
+| `.yaml`, `.yml` | `text/yaml` |
 | `.csv` | `text/csv` |
-| Other | `application/octet-stream` |
+| Unknown extension | `application/octet-stream` |
 
-> **Known Issue:** Some file extensions (including `.md`) may return an incorrect `content_type` when retrieving artifacts. The table above shows the intended behavior. As a workaround, use the file extension from the `path` field to determine the file type.
+The same content type is returned when the artifact is saved, retrieved and listed.
 
 ---
 
@@ -376,15 +402,21 @@ Content types are automatically detected based on file extension:
 
 Artifacts are files. They are not included in search or recall results. To retrieve an artifact, you need its path.
 
-### Finding Artifacts
+## Making Artifacts Findable
 
-There are three ways to find an artifact:
+There are three ways to reach an artifact:
 
-1. **By path** — If you know the path, call [Retrieve Artifact](#retrieve-artifact) directly.
-2. **By browsing** — Use [List Artifacts](#list-artifacts) to browse the directory tree.
-3. **Via a memory reference** — Create a memory that includes the artifact path in its content. When that memory appears in search results, follow the path to retrieve the full artifact.
+1. **By path** - If you know the path, call [Retrieve Artifact](#retrieve-artifact) directly.
+2. **By browsing** - Use [List Artifacts](#list-artifacts) to walk the folder tree. `name_pattern` filters the names in one folder.
+3. **Through a memory** - Store a memory that says what the file is and gives its path. When that memory comes up in search, follow the path to retrieve the full artifact.
 
-This third approach is useful for content that exceeds the memory size limit but still needs to be discoverable. For example, a long research document can be stored as an artifact, with a shorter summary memory that references the artifact path:
+The third way is the one that makes an artifact part of your AI's working knowledge. The memory is searchable, can carry tags, and can be connected to other memories with relationships. The artifact holds the full content. A good pointer memory:
+
+- says what the file contains and when it is useful, in the words someone would search for
+- gives the exact path
+- is updated when the file is replaced or moved, and deleted when the file is deleted
+
+For example, a long research document can be stored as an artifact, with a shorter summary memory that references the artifact path:
 
 ```bash
 # 1. Store the full document as an artifact

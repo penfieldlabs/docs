@@ -54,8 +54,8 @@ curl -X POST https://api.penfield.app/api/v2/memories \
     "content": "Penfield is an AI memory layer...",
     "memory_type": "fact",
     "importance": 0.8,
-    "tags": ["penfield", "intro"],
-    "created_at": "2025-01-06T12:00:00Z"
+    "tags": ["intro", "penfield"],
+    "created_at": "2026-01-06T12:00:00.288284Z"
   }
 }
 ```
@@ -83,14 +83,27 @@ curl -X POST https://api.penfield.app/api/v2/search/hybrid \
       {
         "id": "550e8400-e29b-41d4-a716-446655440000",
         "content": "Penfield is an AI memory layer...",
-        "score": 0.95,
-        "memory_type": "fact"
+        "snippet": "Penfield is an AI memory layer...",
+        "score": 0.71,
+        "metadata": {
+          "memory_type": "fact",
+          "importance": 0.8
+        },
+        "tags": ["intro", "penfield"]
       }
     ],
-    "total": 1
+    "query": "memory layer",
+    "search_metadata": {
+      "search_method": "hybrid",
+      "results_count": 1
+    }
   }
 }
 ```
+
+The example is shortened. See [Search](../endpoints/search.md#hybrid-search) for every field.
+
+A new memory is searchable a few seconds after it is created, once its embedding has been generated.
 
 ---
 
@@ -145,6 +158,7 @@ curl -X POST https://api.penfield.app/api/v2/auth/token \
 
 # Refresh token
 curl -X POST https://api.penfield.app/api/v2/auth/refresh \
+-H "Content-Type: application/json" \
 -d '{"refresh_token": "YOUR_REFRESH_TOKEN"}'
 ```
 
@@ -170,7 +184,7 @@ POST /api/v2/relationships/traverse
 ```
 
 ### Token Lifetimes
-- Access token: 3 days
+- Access token: 24 hours
 - Refresh token: 30 days
 
 Check `expires_in` in the response for exact values.
