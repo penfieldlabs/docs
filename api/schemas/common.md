@@ -13,7 +13,7 @@ All successful responses follow this structure:
   "status": "success",
   "data": { ... },
   "meta": {
-    "timestamp": "2025-01-06T12:00:00.000Z",
+    "timestamp": "2026-01-06T12:00:00.390742+00:00",
     "version": "2.0.0",
     "request_id": "550e8400-e29b-41d4-a716-446655440000"
   }
@@ -29,7 +29,7 @@ All successful responses follow this structure:
 | `meta` | object | Request metadata |
 | `meta.timestamp` | datetime | Server timestamp (ISO 8601) |
 | `meta.version` | string | API version |
-| `meta.request_id` | UUID | Unique request identifier for debugging |
+| `meta.request_id` | string | Unique request identifier for debugging. Treat it as an opaque string |
 
 ---
 
@@ -42,16 +42,17 @@ All error responses follow this structure:
   "status": "error",
   "error": {
     "code": "RES_NOT_FOUND",
-    "message": "Memory not found",
+    "message": "Memory with id '550e8400-e29b-41d4-a716-446655440000' not found",
     "details": {
       "resource_type": "Memory",
       "resource_id": "550e8400-e29b-41d4-a716-446655440000"
-    }
+    },
+    "field_errors": null
   },
   "meta": {
-    "timestamp": "2025-01-06T12:00:00.000Z",
+    "timestamp": "2026-01-06T12:00:00.390742+00:00",
     "version": "2.0.0",
-    "request_id": "550e8400-e29b-41d4-a716-446655440000"
+    "request_id": "dd0e8400e29b41d4a716446655440008"
   }
 }
 ```
@@ -63,7 +64,27 @@ All error responses follow this structure:
 | `status` | string | Always `"error"` for error responses |
 | `error.code` | string | Machine-readable error code |
 | `error.message` | string | Human-readable error message |
-| `error.details` | object | Additional error context (optional) |
+| `error.details` | object or null | Additional error context |
+| `error.field_errors` | object or null | On a 422, one entry per invalid field: the field name mapped to an array of messages. `null` on other errors |
+
+A validation error (422) looks like this:
+
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "VAL_VALIDATION_FAILED",
+    "message": "Request validation failed",
+    "details": null,
+    "field_errors": {
+      "content": ["Field required"]
+    }
+  },
+  "meta": {...}
+}
+```
+
+See the [Error Handling Guide](../guides/error-handling.md) for the list of codes.
 
 ---
 
@@ -111,7 +132,7 @@ Paginated responses include pagination metadata:
 
 ## Bulk Operations
 
-Bulk operation responses include results and errors:
+Bulk operation responses list what was changed:
 
 ```json
 {
@@ -120,19 +141,13 @@ Bulk operation responses include results and errors:
     "created": [ ... ],
     "updated": [ ... ],
     "deleted": [ ... ],
-    "errors": [
-      {
-        "index": 5,
-        "error": {
-          "code": "RES_NOT_FOUND",
-          "message": "Memory not found"
-        }
-      }
-    ]
+    "errors": []
   },
   "meta": { ... }
 }
 ```
+
+Bulk operations are all-or-nothing. If one entry is refused, nothing is changed and the call returns an [error response](#error-response) whose message and `details.index` identify the entry.
 
 ---
 
@@ -146,17 +161,18 @@ The core memory data structure:
   "content": "Memory content text...",
   "memory_type": "fact",
   "importance": 0.8,
-  "confidence": 0.9,
+  "confidence": 0.8,
   "surprise_score": 0.5,
   "source_type": "direct_input",
-  "user_id": "user_123",
+  "user_id": "880e8400-e29b-41d4-a716-446655440003",
   "access_count": 5,
-  "last_accessed": "2025-01-06T14:00:00.000Z",
-  "created_at": "2025-01-06T12:00:00.000Z",
-  "updated_at": "2025-01-06T12:00:00.000Z",
+  "last_accessed": "2026-01-06T14:00:00.000000Z",
+  "created_at": "2026-01-06T12:00:00.288284Z",
+  "updated_at": "2026-01-06T12:00:00.288284Z",
   "metadata": {},
   "embedding_status": "completed",
-  "relationships": []
+  "relationships": [],
+  "tags": ["async", "python"]
 }
 ```
 
@@ -171,7 +187,7 @@ The core memory data structure:
 | `confidence` | float | Confidence score (0-1) |
 | `surprise_score` | float | Novelty score (0-1) |
 | `source_type` | string | Origin of memory |
-| `user_id` | string | Creator identifier |
+| `user_id` | UUID | Creator identifier |
 | `access_count` | integer | Times accessed (not real-time) |
 | `last_accessed` | datetime | Last access timestamp (not real-time) |
 | `created_at` | datetime | Creation timestamp |
@@ -179,6 +195,7 @@ The core memory data structure:
 | `metadata` | object | Custom metadata |
 | `embedding_status` | string | Embedding generation status |
 | `relationships` | array | Related memories (when populated) |
+| `tags` | array | Tag names, normalized, in alphabetical order |
 
 > **Note:** The `access_count` and `last_accessed` fields reflect access patterns over time but are not updated synchronously on each read. Do not rely on these fields for real-time consistency.
 
@@ -197,8 +214,8 @@ The core memory data structure:
   "confidence": 0.9,
   "evidence": {},
   "metadata": {},
-  "created_at": "2025-01-06T12:00:00.000Z",
-  "updated_at": "2025-01-06T12:00:00.000Z"
+  "created_at": "2026-01-06T12:00:00.953480Z",
+  "updated_at": "2026-01-06T12:00:00.953480Z"
 }
 ```
 
@@ -236,8 +253,8 @@ The core memory data structure:
     "percent_complete": 100.0
   },
   "metadata": {},
-  "created_at": "2025-01-06T12:00:00.000Z",
-  "updated_at": "2025-01-06T12:00:00.000Z"
+  "created_at": "2026-01-06T12:00:00.502632Z",
+  "updated_at": "2026-01-06T12:00:02.502112Z"
 }
 ```
 
@@ -250,25 +267,30 @@ The core memory data structure:
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "content": "Full memory content...",
   "snippet": "Truncated content...",
-  "score": 0.95,
+  "score": 0.71,
   "score_breakdown": {
-    "final_score": 0.95,
-    "bm25_score": 0.85,
-    "vector_score": 0.92,
-    "graph_score": 0.7
+    "final_score": 0.71,
+    "bm25_score": 24.51,
+    "vector_score": 0.78,
+    "graph_score": 0.0,
+    "rank_bm25": 1.0,
+    "rank_vector": 1.0
   },
   "metadata": {
     "memory_type": "fact",
     "importance": 0.8,
-    "highlight": "Matching <b>terms</b>..."
+    "highlight": null
   },
   "source_type": "direct_input",
-  "created_at": "2025-01-06T12:00:00.000Z",
-  "content_with_context": "...",
-  "chunk_index": 0,
-  "total_chunks": 1
+  "created_at": "2026-01-06T12:00:00.162108Z",
+  "tags": ["async", "python"],
+  "content_with_context": null,
+  "chunk_index": null,
+  "total_chunks": null
 }
 ```
+
+This is a [hybrid search](../endpoints/search.md#hybrid-search) result. `content_with_context`, `chunk_index` and `total_chunks` are filled in for document chunks and `null` for other memories. See the search page for the field-by-field description and for the vector search variant.
 
 ---
 
@@ -277,12 +299,13 @@ The core memory data structure:
 All timestamps use ISO 8601 format with timezone:
 
 ```
-2025-01-06T12:00:00.000Z
+2026-01-06T12:00:00.288284Z
+2026-01-06T12:00:00.390742+00:00
 ```
 
-- Always UTC (indicated by `Z` suffix)
-- Millisecond precision
-- Format: `YYYY-MM-DDTHH:mm:ss.sssZ`
+- Always UTC
+- Microsecond precision
+- The UTC marker is written either as `Z` or as `+00:00`, depending on the field (`meta.timestamp` uses `+00:00`, most resource fields use `Z`). Both mean the same thing. Use an ISO 8601 parser and do not compare timestamps as strings
 
 ---
 

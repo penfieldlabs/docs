@@ -38,35 +38,37 @@ POST https://api.penfield.app/api/v2/memories
 | `confidence` | float | No | 0.0-1.0 |
 | `tags` | array | No | Up to 10 tags |
 
+If you leave them out, `memory_type` is `fact`, `importance` is `0.5` and `confidence` is `0.8`.
+
 ### Response
+
+`201 Created`
 
 ```json
 {
   "status": "success",
   "data": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
-    "content": "Python async programming uses asyncio for concurrent operations",
+    "content": "Python async programming uses asyncio",
     "memory_type": "fact",
     "importance": 0.8,
-    "confidence": 0.9,
+    "confidence": 0.8,
     "surprise_score": 0.5,
     "source_type": "direct_input",
-    "user_id": "user_123",
+    "user_id": "880e8400-e29b-41d4-a716-446655440003",
     "access_count": 0,
     "last_accessed": null,
-    "created_at": "2025-01-06T12:00:00.000Z",
-    "updated_at": "2025-01-06T12:00:00.000Z",
-    "metadata": {
-      "category": "programming",
-      "language": "python"
-    },
+    "created_at": "2026-01-06T12:00:00.288284Z",
+    "updated_at": "2026-01-06T12:00:00.288284Z",
+    "metadata": {},
     "embedding_status": "pending",
-    "relationships": []
+    "relationships": [],
+    "tags": ["async", "python"]
   },
   "meta": {
-    "timestamp": "2025-01-06T12:00:00.000Z",
+    "timestamp": "2026-01-06T12:00:00.390742+00:00",
     "version": "2.0.0",
-    "request_id": "550e8400-e29b-41d4-a716-446655440000"
+    "request_id": "cc0e8400-e29b-41d4-a716-446655440007"
   }
 }
 ```
@@ -75,17 +77,17 @@ POST https://api.penfield.app/api/v2/memories
 
 - Embeddings are generated asynchronously in the background
 - `embedding_status` will be `"pending"` initially, then `"completed"` or `"failed"`
-- Tags are normalized (lowercase, hyphens replace spaces/underscores)
-- Invalid tags are silently skipped
+- Tags are normalized (lowercase, hyphens replace spaces/underscores) and returned in alphabetical order
+- Invalid tags are silently skipped. See [Tag Limits](tags.md#tag-limits)
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
 | 401 | `AUTH_UNAUTHORIZED` | Missing or invalid token |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
 | 403 | `AUTH_FORBIDDEN` | `memory_type` is `identity_core` or `personality_trait` (use `/api/v2/personality` endpoints) |
-| 422 | `VAL_VALIDATION_FAILED` | Invalid request body |
-| 422 | `VAL_FIELD_TOO_LONG` | Content exceeds 10,000 characters |
+| 422 | `VAL_VALIDATION_FAILED` | Invalid request body. `error.field_errors` names each field and the reason, for example content over 10,000 characters or more than 10 tags |
 
 ---
 
@@ -113,17 +115,18 @@ GET https://api.penfield.app/api/v2/memories/{memory_id}
     "content": "Python async programming uses asyncio for concurrent operations",
     "memory_type": "fact",
     "importance": 0.8,
-    "confidence": 0.9,
+    "confidence": 0.8,
     "surprise_score": 0.5,
     "source_type": "direct_input",
-    "user_id": "user_123",
+    "user_id": "880e8400-e29b-41d4-a716-446655440003",
     "access_count": 5,
-    "last_accessed": "2025-01-06T14:00:00.000Z",
-    "created_at": "2025-01-06T12:00:00.000Z",
-    "updated_at": "2025-01-06T12:00:00.000Z",
+    "last_accessed": "2026-01-06T14:00:00.000000Z",
+    "created_at": "2026-01-06T12:00:00.288284Z",
+    "updated_at": "2026-01-06T12:00:00.288284Z",
     "metadata": {},
     "embedding_status": "completed",
-    "relationships": []
+    "relationships": [],
+    "tags": ["async", "python"]
   },
   "meta": {...}
 }
@@ -163,7 +166,7 @@ GET https://api.penfield.app/api/v2/memories
 | `time_range` | string | - | Relative time filter: `today`, `yesterday`, `week`, `month`, `quarter`, `year` |
 | `tags` | string | - | Comma-separated tags (OR logic) |
 | `sort` | string | `-created_at` | Sort field with optional `-` prefix for descending |
-| `include_inactive` | boolean | `false` | Include evolved/deprecated memories |
+| `include_inactive` | boolean | `false` | Include memories that are no longer active (replaced by [evolve](analysis.md#evolve-memory) or by resolving a contradiction) |
 
 ### Response
 
@@ -177,17 +180,18 @@ GET https://api.penfield.app/api/v2/memories
         "content": "Python async programming...",
         "memory_type": "fact",
         "importance": 0.8,
-        "confidence": 0.9,
+        "confidence": 0.8,
         "surprise_score": 0.5,
         "source_type": "direct_input",
-        "user_id": "user_123",
+        "user_id": "880e8400-e29b-41d4-a716-446655440003",
         "access_count": 5,
-        "last_accessed": "2025-01-06T14:00:00.000Z",
-        "created_at": "2025-01-06T12:00:00.000Z",
-        "updated_at": "2025-01-06T12:00:00.000Z",
+        "last_accessed": "2026-01-06T14:00:00.000000Z",
+        "created_at": "2026-01-06T12:00:00.288284Z",
+        "updated_at": "2026-01-06T12:00:00.288284Z",
         "metadata": {},
         "embedding_status": "completed",
-        "relationships": []
+        "relationships": [],
+        "tags": ["async", "python"]
       }
     ],
     "pagination": {
@@ -284,9 +288,10 @@ Returns the updated memory object.
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 403 | `AUTH_FORBIDDEN` | `memory_type` is `identity_core` or `personality_trait` (use `/api/v2/personality` endpoints) |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
+| 403 | `AUTH_FORBIDDEN` | The update sets `memory_type` to `identity_core` or `personality_trait` (use `/api/v2/personality` endpoints) |
 | 404 | `RES_NOT_FOUND` | Memory not found |
-| 422 | `VAL_VALIDATION_FAILED` | Invalid update data |
+| 422 | `VAL_VALIDATION_FAILED` | Invalid update data (see `error.field_errors`) |
 
 ---
 
@@ -315,12 +320,13 @@ HTTP 204 No Content
 - This operation is permanent and cannot be undone
 - Associated relationships are also deleted
 - Tags are not deleted (they may be used by other memories)
-- **Requires `delete` permission** on your API key. Not available via standard MCP access.
+- **Requires the `delete` scope.** A token with only `read` and `write` gets 403. There is no MCP tool that deletes a memory.
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `delete` scope |
 | 404 | `RES_NOT_FOUND` | Memory not found |
 
 ---
@@ -338,12 +344,15 @@ All memory responses include these fields:
 | `confidence` | float | Certainty score (0.0-1.0) |
 | `surprise_score` | float | Novelty indicator (0.0-1.0). Higher values indicate more unexpected or novel content. Default: 0.5. Currently set at creation; future versions may update dynamically. |
 | `source_type` | string | Origin of the memory |
-| `user_id` | string | User who created the memory |
+| `user_id` | UUID | User who created the memory |
 | `access_count` | integer | Number of times accessed (not real-time; see note below) |
 | `last_accessed` | datetime | When last accessed, or null (not real-time; see note below) |
 | `embedding_status` | string | `"pending"`, `"completed"`, or `"failed"` |
 | `created_at` | datetime | Creation timestamp |
 | `updated_at` | datetime | Last modification timestamp |
+| `metadata` | object | Custom key-value data (`{}` when none) |
+| `relationships` | array | Read a memory's relationships with [List Relationships](relationships.md#list-relationships) (`?memory_id=...`) |
+| `tags` | array | The memory's tags, normalized, in alphabetical order |
 
 ### Access Tracking Note
 

@@ -1,12 +1,27 @@
 # MCP Integration Guide
 
-Penfield provides a Model Context Protocol (MCP) server for direct integration with AI assistants like Claude Desktop, Cursor, and other MCP-compatible clients.
+Penfield provides a Model Context Protocol (MCP) server for direct integration with AI assistants such as Claude, ChatGPT, Grok, Perplexity, Cursor and other MCP-compatible clients.
 
 ---
 
 ## Overview
 
 The MCP server exposes Penfield's memory and knowledge graph capabilities as tools that AI assistants can use during conversations. This enables persistent memory across sessions without requiring direct API integration.
+
+---
+
+## Connecting
+
+| | |
+|---|---|
+| **Server URL** | `https://mcp.penfield.app` |
+| **Transport** | Streamable HTTP |
+| **Authentication** | OAuth 2.1. You sign in to Penfield in the browser the first time the client connects |
+| **Tools** | 17 |
+
+Most AI apps call this a custom connector, a plugin or an app: you paste the server URL and approve the sign-in. Step-by-step guides for each platform are under [Platform Setup](../onboarding/README.md). For a client without a guide, see [Other MCP Clients](../onboarding/other-clients.md), which also lists the technical details.
+
+The MCP server does not accept an API key as its bearer token. API keys are for the [REST API](../api/README.md).
 
 ---
 
@@ -24,8 +39,8 @@ The MCP server exposes Penfield's memory and knowledge graph capabilities as too
 |------|-------------|----------------|
 | `store` | Store a new memory | `POST /api/v2/memories` |
 | `recall` | Hybrid search (BM25 + vector + graph) for context retrieval | `POST /api/v2/search/hybrid` |
-| `fetch` | Get a specific memory | `GET /api/v2/memories/{id}` |
-| `search` | Semantic search for fuzzy concept matching | `POST /api/v2/search/hybrid` |
+| `fetch` | Get a specific memory by ID, in citation format | `GET /api/v2/memories/{id}` |
+| `search` | Same search as `recall`, returned in the citation format ChatGPT connectors require | `POST /api/v2/search/hybrid` |
 | `update_memory` | Update an existing memory | `PUT /api/v2/memories/{id}` |
 
 ### Knowledge Graph Tools
@@ -79,6 +94,7 @@ Load the user's personality briefing at the start of a conversation.
 ```json
 {
   "success": true,
+  "message": "Awakening complete - personality loaded",
   "briefing": "=== AWAKENING BRIEFING ===\n..."
 }
 ```
@@ -101,7 +117,7 @@ Store a new memory with automatic type detection.
 |-----------|------|----------|-------------|
 | `content` | string | Yes | Memory content (1-10,000 chars) |
 | `tags` | array | No | Tags for categorization |
-| `importance` | number | No | 0.0-1.0 (auto-calculated if omitted) |
+| `importance` | number | No | 0.0-1.0 (0.5 if omitted) |
 
 **Note:** Memory type is auto-detected from content. Valid types: fact, insight, conversation, correction, reference, task, checkpoint, relationship, strategy.
 
@@ -119,8 +135,8 @@ Hybrid search (BM25 + vector + graph). Use when you need context before respondi
   "limit": 20,
   "source_type": "memory",
   "tags": ["python"],
-  "start_date": "2025-01-01",
-  "end_date": "2025-01-31"
+  "start_date": "2026-01-01",
+  "end_date": "2026-01-31"
 }
 ```
 
@@ -137,7 +153,7 @@ Hybrid search (BM25 + vector + graph). Use when you need context before respondi
 
 ### search
 
-Semantic search (higher vector weight). Use for fuzzy concept search when you don't have exact terms. Returns ChatGPT-compatible citation format.
+The same hybrid search as `recall`, with the same ranking. It exists because ChatGPT connectors require tools named `search` and `fetch`, and it returns results in the citation format they expect. In other clients, prefer `recall`, which also offers the tag, date and source filters.
 
 ```json
 {
@@ -151,13 +167,27 @@ Semantic search (higher vector weight). Use for fuzzy concept search when you do
 | `query` | string | Yes | Search query |
 | `limit` | number | No | Max results (default: 10, max: 100) |
 
-**Response includes citation fields:** `id`, `title`, `url`, `text`
+**Response:**
+```json
+{
+  "results": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "Python async uses asyncio for concurrent operations",
+      "url": "https://mcp.penfield.app/memory/550e8400-e29b-41d4-a716-446655440000",
+      "text": "Python async uses asyncio for concurrent operations",
+      "type": "fact",
+      "relevance": 0.68
+    }
+  ]
+}
+```
 
 ---
 
 ### fetch
 
-Get a specific memory by ID with citation support.
+Get a specific memory by ID. Like `search`, it is part of the tool pair ChatGPT connectors require, and it returns the memory with the citation fields `id`, `title`, `url` and `text`.
 
 ```json
 {
@@ -241,7 +271,7 @@ Remove a relationship between two memories.
 
 **API Endpoint:** `DELETE /api/v2/relationships/between?from_id={id}&to_id={id}`
 
-> **REST API:** Requires `delete` permission on your API key.
+> **Permission:** Requires the `delete` scope.
 
 ---
 
@@ -273,14 +303,14 @@ Analyze memory patterns and generate insights.
 {
   "time_window": "week",
   "include_documents": false,
-  "start_date": "2025-01-01",
-  "end_date": "2025-01-07"
+  "start_date": "2026-01-01",
+  "end_date": "2026-01-07"
 }
 ```
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `time_window` | enum | No | "recent", "today", "week" (default: "recent") |
+| `time_window` | string | No | "recent", "today", "week", "month", "1d", "7d", "30d" or "90d" (default: "recent") |
 | `include_documents` | boolean | No | Include document chunks (default: false) |
 | `start_date` | string | No | Filter by date (ISO 8601) |
 | `end_date` | string | No | Filter by date (ISO 8601) |
@@ -417,7 +447,7 @@ List saved checkpoints with optional filtering and pagination.
       "name": "API Investigation",
       "description": "Detailed context from API debugging session...",
       "memory_count": 15,
-      "created": "2025-01-06T12:00:00Z"
+      "created": "2026-01-06T12:00:00Z"
     }
   ]
 }
@@ -459,8 +489,10 @@ Save a file artifact.
 - Must specify filename (not directory)
 - No path traversal (`..`)
 - No hidden files (`.`)
-- Max depth: 10 levels
+- Max depth: 10 folders (the file name does not count)
 - Valid characters: alphanumeric, `-`, `_`, `.`, `/`
+- Maximum size: 1MB
+- Saving to a path that already exists is refused (`ALREADY_EXISTS`). To replace a file, call `delete_artifact` first
 
 ---
 
@@ -526,7 +558,15 @@ Delete a stored artifact.
 |-----------|------|----------|-------------|
 | `path` | string | Yes | Artifact path to delete |
 
-> **Note on artifact searchability:** Artifacts are files, not memories. They do not appear in `recall` or `search` results. To find an artifact, use `retrieve_artifact` with the path, or browse with `list_artifacts`. If you want an artifact to be discoverable via search, use `store` to create a memory that includes the artifact path in its content.
+> **Permission:** `delete_artifact` requires the `delete` scope.
+
+#### Using Artifacts Well
+
+Artifacts are file storage: a folder tree for content that is a file rather than a fact. Use them for code, long documents, structured data, diagrams and anything larger than the 10,000 characters a memory can hold.
+
+Artifacts are files, not memories. They do not appear in `recall` or `search` results. An artifact is reached with `retrieve_artifact` and its path, or by browsing with `list_artifacts`.
+
+To make an artifact discoverable, pair it with a memory: after `save_artifact`, call `store` with a short description of what the file contains and its exact path. `recall` then finds the memory, and the path in it leads to the file. Keep that memory up to date when the file is replaced or moved. See [Artifacts](../api/endpoints/artifacts.md#making-artifacts-findable).
 
 ---
 
@@ -544,13 +584,13 @@ Permanently delete a memory.
 
 ---
 
-## Deprecated Tools
+## Removed Tools
 
-These tools are deprecated and will be removed in a future release.
+These tools are no longer offered by the MCP server.
 
 ### summarize
 
-**Status:** Deprecated - use `save_context` instead.
+**Status:** Removed - use `save_context` instead.
 
 The summarize tool produced statistical summaries rather than useful cognitive handoffs. It has been replaced by `save_context` which preserves narrative context and memory references.
 
@@ -558,9 +598,9 @@ The summarize tool produced statistical summaries rather than useful cognitive h
 
 ### get_storage_access
 
-**Status:** Deprecated - use Penfield Portal instead.
+**Status:** Removed - use Penfield Portal instead.
 
-Direct MinIO storage access has been removed for security reasons. Use the [Penfield Portal](https://portal.penfield.app/documents) to manage documents.
+Direct storage access has been removed for security reasons. Use the [Penfield Portal](https://portal.penfield.app/documents) to manage documents.
 
 ---
 
@@ -607,33 +647,6 @@ When using `connect`, choose from these 24 relationship types:
 
 ### Dependencies
 - `depends_on` - Requires prerequisite
-
----
-
-## Configuration
-
-MCP server configuration varies by client. Contact Penfield support for:
-
-- MCP server URL
-- Authentication credentials
-- Client-specific setup instructions
-
-### Claude Desktop
-
-Add to your Claude Desktop MCP configuration:
-
-```json
-{
-  "mcpServers": {
-    "penfield": {
-      "url": "YOUR_MCP_SERVER_URL",
-      "headers": {
-        "Authorization": "Bearer YOUR_API_KEY"
-      }
-    }
-  }
-}
-```
 
 ---
 
@@ -685,8 +698,14 @@ Common error codes:
 | `NOT_FOUND` | Memory or resource doesn't exist |
 | `VALIDATION_ERROR` | Invalid parameters |
 | `INVALID_PATH` | Invalid artifact path |
-| `ALREADY_EXISTS` | Resource already exists |
-| `RATE_LIMITED` | Too many requests |
+| `ALREADY_EXISTS` | An artifact already exists at that path |
+| `DUPLICATE_NAME` | `save_context` was called with a name that is already in use |
+| `HTTP_400` | The API refused the request, for example `connect` on a relationship that already exists or a memory that does not exist |
+| `HTTP_403` | The sign-in does not have the scope the tool needs (`disconnect` and `delete_artifact` need `delete`) |
+| `HTTP_404` | The memory was not found (`update_memory`, `explore`) |
+| `HTTP_422` | The API rejected a value, for example content over 10,000 characters or more than 10 tags |
+
+`operation` names the tool that failed. Some tools leave it out.
 
 ---
 
@@ -701,6 +720,7 @@ Common error codes:
 | `fetch` | GET | `/api/v2/memories/{id}` |
 | `update_memory` | PUT | `/api/v2/memories/{id}` |
 | `connect` | POST | `/api/v2/relationships` |
+| `disconnect` | DELETE | `/api/v2/relationships/between` |
 | `explore` | POST | `/api/v2/relationships/traverse` |
 | `save_context` | POST | `/api/v2/memories` |
 | `restore_context` | GET | `/api/v2/memories` |

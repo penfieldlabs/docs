@@ -236,8 +236,7 @@ Contradiction resolution status.
 | Value | Description |
 |-------|-------------|
 | `unresolved` | Not yet addressed |
-| `resolved` | Resolved with new information |
-| `accepted` | One version accepted as correct |
+| `resolved` | The contradiction has been resolved |
 
 ---
 
@@ -263,11 +262,31 @@ Graph traversal directions.
 
 ## Time Windows
 
-Relative time periods for analysis.
+Relative time periods. Two parameters take them, and each has its own list of values.
+
+### `time_window` (Reflect)
+
+Used by [`POST /analysis/reflect`](../endpoints/analysis.md#reflect).
 
 | Value | Description |
 |-------|-------------|
 | `recent` | Last 50 memories |
+| `today` | Today's memories |
+| `week` | Last 7 days |
+| `month` | Last 30 days |
+
+```json
+{
+  "time_window": "week"
+}
+```
+
+### `time_range` (List Memories)
+
+Used by [`GET /memories`](../endpoints/memories.md#list-memories) as a query parameter.
+
+| Value | Description |
+|-------|-------------|
 | `today` | Today's memories |
 | `yesterday` | Yesterday's memories |
 | `week` | Last 7 days |
@@ -275,12 +294,8 @@ Relative time periods for analysis.
 | `quarter` | Last 90 days |
 | `year` | Last 365 days |
 
-### Usage
-
-```json
-{
-  "time_range": "week"
-}
+```
+GET /api/v2/memories?time_range=week
 ```
 
 ---

@@ -14,14 +14,24 @@ All errors follow this format:
   "error": {
     "code": "ERROR_CODE",
     "message": "Human-readable message",
-    "details": {}
+    "details": {},
+    "field_errors": null
   },
   "meta": {
-    "timestamp": "2025-01-06T12:00:00.000Z",
-    "request_id": "uuid-for-debugging"
+    "timestamp": "2026-01-06T12:00:00.390742+00:00",
+    "version": "2.0.0",
+    "request_id": "id-for-debugging"
   }
 }
 ```
+
+| Field | Description |
+|-------|-------------|
+| `error.code` | Machine-readable code. Branch on this together with the HTTP status |
+| `error.message` | Human-readable reason |
+| `error.details` | Extra context, or `null` |
+| `error.field_errors` | On a 422: each invalid field mapped to an array of messages. Otherwise `null` |
+| `meta.request_id` | Include this in support requests |
 
 ---
 
@@ -31,21 +41,20 @@ All errors follow this format:
 
 | Code | Message | Cause | Solution |
 |------|---------|-------|----------|
-| `AUTH_INVALID_CREDENTIALS` | Invalid credentials | Wrong API key or token | Check API key format |
-| `AUTH_TOKEN_EXPIRED` | Token expired | JWT past expiration | Refresh token or re-authenticate |
-| `AUTH_TOKEN_INVALID` | Invalid token | Malformed or tampered JWT | Re-authenticate |
-| `AUTH_UNAUTHORIZED` | Unauthorized | Missing Authorization header | Add Bearer token |
+| `AUTH_UNAUTHORIZED` | `Invalid API key` | The API key sent to `/auth/token` was not accepted | Check the key (format `tm_..._ak_...`) and that it has not been revoked |
+| `AUTH_UNAUTHORIZED` | `Invalid token` | The bearer token is not a valid access token. This is also what you get when an API key is sent where an access token is expected | Exchange the API key for a token first, or refresh |
+| `AUTH_UNAUTHORIZED` | `No access token provided (expected Authorization header or cookie)` | Missing `Authorization` header | Add `Authorization: Bearer <token>` |
+| `AUTH_TOKEN_INVALID` | `Invalid refresh token` | The refresh token sent to `/auth/refresh` was not accepted | Re-authenticate |
 
 **Handling:**
 ```python
 if response.status_code == 401:
-    error_code = response.json().get("error", {}).get("code")
-    if error_code == "AUTH_TOKEN_EXPIRED":
-        # Refresh token and retry
-        new_token = refresh_token(refresh_token)
+    # The access token is missing, invalid or expired.
+    # Refresh once and retry; if that fails, authenticate again.
+    try:
+        new_token = refresh_access_token(refresh_token)
         retry_request(new_token)
-    else:
-        # Re-authenticate
+    except AuthError:
         authenticate()
 ```
 
@@ -55,7 +64,7 @@ if response.status_code == 401:
 
 | Code | Message | Cause | Solution |
 |------|---------|-------|----------|
-| `AUTH_INSUFFICIENT_PERMISSIONS` | Insufficient permissions | Token lacks required scope | Request token with correct scopes |
+| `AUTH_INSUFFICIENT_PERMISSIONS` | `Insufficient permissions. Required scope(s): memories:write, write, admin` | The token lacks the scope the call needs. The message lists the scopes that would allow it | Use a token or API key that has the scope (`write` to create and update, `delete` to delete) |
 | `AUTH_FORBIDDEN` | Cannot create/set {type} via this endpoint | Attempted to create or update a memory with a protected type (`identity_core`, `personality_trait`) | Use `/api/v2/personality` endpoints instead |
 
 **Protected Memory Types:**
@@ -74,7 +83,7 @@ if response.status_code == 401:
   "meta": {
     "timestamp": "2026-02-11T10:13:32.467536+00:00",
     "version": "2.0.0",
-    "request_id": "uuid-for-debugging"
+    "request_id": "id-for-debugging"
   }
 }
 ```
@@ -84,28 +93,27 @@ if response.status_code == 401:
 if response.status_code == 403:
     error_code = response.json().get("error", {}).get("code")
     if error_code == "AUTH_FORBIDDEN":
-        # Protected memory type or insufficient permissions
+        # Protected memory type
         # Use /personality endpoints for identity_core and personality_trait
         pass
     else:
-        # Token is valid but lacks required permissions
+        # AUTH_INSUFFICIENT_PERMISSIONS:
+        # the token is valid but lacks the required scope
         request_elevated_access()
 ```
 
 ---
 
-### Validation Errors (422)
+### Validation Errors (422 and 400)
 
-| Code | Message | Cause | Solution |
-|------|---------|-------|----------|
-| `VAL_VALIDATION_FAILED` | Validation failed | Request body invalid | Check request format |
-| `VAL_FIELD_REQUIRED` | Required field missing | Missing required parameter | Add required field |
-| `VAL_FIELD_TOO_LONG` | Field too long | Content exceeds max length | Truncate, split into multiple memories, upload as a document, or store as an artifact with a summary memory linking to it |
-| `VAL_FIELD_INVALID` | Invalid field value | Wrong type or format | Check field type |
-| `VAL_UUID_INVALID` | Invalid UUID format | Malformed UUID | Use valid UUID v4 |
-| `VAL_ENUM_INVALID` | Invalid enum value | Value not in allowed list | Use valid enum value |
+Every validation failure uses the code `VAL_VALIDATION_FAILED`. The HTTP status tells you which kind it is.
 
-**Field-Level Errors:**
+| Status | When | Where the reason is |
+|--------|------|---------------------|
+| 422 | The request does not match the schema: a required field is missing, a value has the wrong type, a string is too long, an enum value or UUID is not valid | `error.field_errors` |
+| 400 | The request is well formed but breaks a rule: search weights that do not sum to 1.0, a relationship that already exists, a memory that would have more than 10 tags, an unsupported upload type, an invalid artifact path | `error.message` (and `error.details` on some endpoints) |
+
+**Field-Level Errors (422):**
 
 Validation errors include a `field_errors` object that identifies exactly which fields failed:
 
@@ -127,11 +135,30 @@ Validation errors include a `field_errors` object that identifies exactly which 
 
 Each key in `field_errors` is the field name, and the value is an array of error messages for that field.
 
+**Rule Violations (400):**
+
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "VAL_VALIDATION_FAILED",
+    "message": "Search weights must sum to 1.0 (current sum: 1.5)",
+    "details": {
+      "bm25_weight": 0.9,
+      "vector_weight": 0.4,
+      "graph_weight": 0.2
+    },
+    "field_errors": null
+  },
+  "meta": {...}
+}
+```
+
 **Handling:**
 ```python
 if response.status_code == 422:
     error = response.json().get("error", {})
-    field_errors = error.get("field_errors", {})
+    field_errors = error.get("field_errors") or {}
 
     # Check specific field errors
     if "content" in field_errors:
@@ -140,6 +167,10 @@ if response.status_code == 422:
     # Or iterate all field errors
     for field, messages in field_errors.items():
         print(f"{field}: {', '.join(messages)}")
+
+elif response.status_code == 400:
+    error = response.json().get("error", {})
+    print(f"Rejected: {error.get('message')}")
 ```
 
 ---
@@ -148,9 +179,23 @@ if response.status_code == 422:
 
 | Code | Message | Cause | Solution |
 |------|---------|-------|----------|
-| `RES_NOT_FOUND` | Resource not found | Memory/document doesn't exist | Verify resource ID |
-| `RES_MEMORY_NOT_FOUND` | Memory not found | Memory ID doesn't exist | Check memory UUID |
-| `RES_DOCUMENT_NOT_FOUND` | Document not found | Document ID doesn't exist | Check document UUID |
+| `RES_NOT_FOUND` | `Memory with id '...' not found` | The memory, document, relationship, artifact, trait or contradiction does not exist | Verify the ID or path |
+
+`error.details` names what was looked for:
+
+```json
+{
+  "code": "RES_NOT_FOUND",
+  "message": "Document with id '550e8400-e29b-41d4-a716-446655440000' not found",
+  "details": {
+    "resource_type": "Document",
+    "resource_id": "550e8400-e29b-41d4-a716-446655440000"
+  },
+  "field_errors": null
+}
+```
+
+A memory that has been replaced through [evolve](../endpoints/analysis.md#evolve-memory) also returns 404 on `GET /memories/{id}`. Use the id of the new version.
 
 **Handling:**
 ```python
@@ -163,36 +208,21 @@ if response.status_code == 404:
 
 ### Conflict Errors (409)
 
-| Code | Message | Cause | Solution |
-|------|---------|-------|----------|
-| `RES_ALREADY_EXISTS` | Resource already exists | Duplicate creation attempt | Use existing resource |
-| `RES_RELATIONSHIP_EXISTS` | Relationship exists | Duplicate relationship | Skip or update existing |
+| Status | Message | Cause | Solution |
+|--------|---------|-------|----------|
+| 409 | `Artifact already exists at path: /notes/python-tips.md` | An artifact is already stored at that path | Delete it first, or save under another path |
 
 **Checkpoint Name Uniqueness:**
 
-Checkpoint names are unique per tenant. Attempting to save a context with a name that already exists returns a 409 with `RES_ALREADY_EXISTS`:
+Context checkpoint names are unique. The MCP `save_context` tool refuses a name that is already in use and returns a `DUPLICATE_NAME` error code. See the [MCP Integration Guide](../../mcp/mcp-integration.md#save_context) for details.
 
-```json
-{
-  "status": "error",
-  "error": {
-    "code": "RES_ALREADY_EXISTS",
-    "message": "Context with identifier 'My Checkpoint' already exists",
-    "details": {
-      "resource_type": "Context",
-      "identifier": "My Checkpoint"
-    },
-    "field_errors": null
-  },
-  "meta": {
-    "timestamp": "2026-02-11T09:58:31.131531+00:00",
-    "version": "2.0.0",
-    "request_id": "uuid-for-debugging"
-  }
-}
-```
+---
 
-The MCP `save_context` tool surfaces this as a `DUPLICATE_NAME` error code. See the [MCP Integration Guide](../../mcp/mcp-integration.md#save_context) for details.
+### Payload Too Large (413)
+
+| Status | Cause | Solution |
+|--------|-------|----------|
+| 413 | A document upload over 20MB, or an artifact over 1MB | Split the file |
 
 ---
 
@@ -202,14 +232,31 @@ The MCP `save_context` tool surfaces this as a `DUPLICATE_NAME` error code. See 
 |------|---------|-------|----------|
 | `BIZ_RATE_LIMIT_EXCEEDED` | Rate limit exceeded | Too many requests | Wait and retry |
 
-**Headers on 429 responses:**
+```json
+{
+  "status": "error",
+  "error": {
+    "code": "BIZ_RATE_LIMIT_EXCEEDED",
+    "message": "Rate limit exceeded",
+    "details": {
+      "retry_after": 3,
+      "limit": 35
+    }
+  },
+  "meta": {...}
+}
+```
+
+**Headers:**
 
 | Header | Description |
 |--------|-------------|
 | `x-ratelimit-limit` | Max requests per window |
 | `x-ratelimit-remaining` | Requests left in window |
 | `x-ratelimit-reset` | Unix timestamp when window resets |
-| `retry-after` | Seconds to wait before retrying |
+| `retry-after` | Seconds to wait before retrying (on 429) |
+
+The limit depends on the endpoint. Read it from the headers rather than assuming a number.
 
 **Handling:**
 ```python
@@ -221,17 +268,17 @@ if response.status_code == 429:
 
 ---
 
-### Server Errors (500, 502, 503)
+### Server Errors (500, 501, 503)
 
-| Code | Message | Cause | Solution |
-|------|---------|-------|----------|
-| `SYS_INTERNAL_ERROR` | Internal server error | Server-side issue | Retry with backoff |
-| `SYS_SERVICE_UNAVAILABLE` | Service unavailable | Maintenance or overload | Retry later |
-| `SYS_BAD_GATEWAY` | Bad gateway | Upstream service issue | Retry later |
+| Status | Code | Message | Cause | Solution |
+|--------|------|---------|-------|----------|
+| 500 | `SYS_INTERNAL_ERROR` | Internal server error | Server-side issue | Retry with backoff. If it persists, contact support with the `request_id` |
+| 501 | `SYS_NOT_IMPLEMENTED` | Not yet implemented | The feature is not available yet (Word document upload, document reprocess) | Use a supported alternative |
+| 503 | `EXT_SEARCH_SERVICE_ERROR` | An error occurred | The search service could not complete the request | Retry later |
 
 **Handling:**
 ```python
-if response.status_code >= 500:
+if response.status_code in (500, 503):
     # Exponential backoff retry
     for attempt in range(max_retries):
         time.sleep(2 ** attempt)
@@ -289,31 +336,31 @@ def with_retry(
 
 ## Error Details
 
-Some errors include additional context in `details`:
+Some errors include additional context in `details`. A request that fails schema validation carries its reasons in `field_errors` instead. For example, content over the 10,000 character limit:
 
 ```json
 {
   "error": {
-    "code": "VAL_FIELD_TOO_LONG",
-    "message": "Content exceeds maximum length",
-    "details": {
-      "field": "content",
-      "max_length": 10000,
-      "actual_length": 15234
+    "code": "VAL_VALIDATION_FAILED",
+    "message": "Request validation failed",
+    "details": null,
+    "field_errors": {
+      "content": ["Value error, Memory content is 10,001 characters, exceeds the 10,000 character limit. For longer content, upload as a document (POST /api/v2/documents/upload) ..."]
     }
   }
 }
 ```
 
+Content that is too long for one memory can be split into several memories, uploaded as a [document](../endpoints/documents.md), or stored as an [artifact](../endpoints/artifacts.md) with a summary memory that points to it.
+
 Common detail fields:
 
 | Field | Description |
 |-------|-------------|
-| `field` | Which field caused the error |
-| `resource_type` | Type of resource (Memory, Document, etc.) |
-| `resource_id` | ID of affected resource |
-| `max_length` | Maximum allowed length |
-| `allowed_values` | List of valid enum values |
+| `resource_type` | Type of resource (Memory, Document, Relationship, etc.) on a 404 |
+| `resource_id` | ID of the resource that was not found |
+| `errors` | Array of reasons on a relationship that was refused (400) |
+| `retry_after`, `limit` | Seconds to wait and the limit that was hit, on a 429 |
 
 ---
 

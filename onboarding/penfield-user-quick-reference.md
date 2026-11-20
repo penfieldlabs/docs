@@ -91,7 +91,7 @@ Your AI will fix the stored information.
 
 Claude has a "Use Style" feature, but it's redundant when you have Penfield. Your AI builds communication preferences naturally through your accumulated conversations. You can tell your AI to develop specific writing styles for specific use cases and to remember them. 
 
-**Warning:** If you enable Style and forget to disable it, your might not behave as expected. Style may override your Penfield-built personality.
+**Warning:** If you enable Style and forget to disable it, your assistant might not behave as expected. Style may override your Penfield-built personality.
 
 **Best practice:** Build your AI's communication style naturally through Penfield by giving feedback and corrections over time.
 
@@ -146,19 +146,23 @@ Your AI will load the complete project state instantly.
 
 **Documents**
 
-You can upload documents (PDFs, Word docs, etc.) that become searchable:
+You can upload documents (PDFs, Markdown, text files, etc.) that become searchable:
 
 - Upload via the [Penfield portal](https://portal.penfield.app) or supported integrations
 - Later: "Search our documents for contract renewal terms"
 - Your AI can reference and quote from uploaded documents
 
-Artifacts (File Storage)
+**Artifacts (File Storage)**
 
-Save and retrieve files like templates:
+Artifacts are files your AI saves in your Penfield account and reads back later: code, long documents, templates, diagrams, anything too big for a single memory.
 
 - "Save this as my standard PR template artifact"
 - "Get my PR template artifact"
 - "List my saved artifacts"
+
+Artifacts are stored by folder and file name, like files on a disk. Search does not look inside them. So your AI can find a file again in a later conversation, have it note where the file is:
+
+- "Save this script as an artifact and remember where you put it"
 
 ---
 
@@ -417,7 +421,7 @@ Try: "What decisions did we have about scaling?"
 
 → Finds role-related information
 
-### Pattern 5: Tag-Based Queries**
+### Pattern 5: Tag-Based Queries
 
 - "Show me everything tagged as 'q1-planning'"
 - "What legal items do I have stored?"
@@ -491,7 +495,7 @@ discussed, decisions made, open questions, and next steps."
 
 ## Understanding the Graph
 
-Think of Penfield like Wikipedia with all the "See Also" links intact, but for YOUR information. If you're familiar with Obsidian, Penfield is like Obisidian for your AI.
+Think of Penfield like Wikipedia with all the "See Also" links intact, but for YOUR information. If you're familiar with Obsidian, Penfield is like Obsidian for your AI.
 
 ### Simple Example
 
@@ -582,7 +586,7 @@ When you see relationships your AI might miss, point them out. Your AI will be m
 
 ### 5. Quality Over Quantity
 
-Use Penfeild freely, but avoid spamming it with low-quality memories.
+Use Penfield freely, but avoid spamming it with low-quality memories.
 
 ---
 
@@ -616,6 +620,6 @@ That's the point.
 
 ---
 
-**Need help?** See [Setup Instructions](penfield-setup-guide.md) and [Troubleshooting Instructions](reconnect-penfield.md) or contact support@penfield.app
+**Need help?** See the [Setup Guides](README.md) and [Troubleshooting Instructions](reconnect-penfield.md) or contact support@penfield.app
 
 ---

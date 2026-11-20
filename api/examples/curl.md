@@ -377,7 +377,7 @@ RESULTS=$(curl -s -X POST "$BASE_URL/api/v2/search/hybrid" \
 -H "Authorization: Bearer $TOKEN" \
 -H "Content-Type: application/json" \
 -d '{"query": "test", "limit": 5}')
-COUNT=$(echo "$RESULTS" | json_get "len(['data']['items'])")
+COUNT=$(echo "$RESULTS" | python3 -c "import sys,json; print(len(json.load(sys.stdin)['data']['items']))")
 echo "Found $COUNT results"
 
 # Cleanup
@@ -392,7 +392,8 @@ echo "Done"
 ```bash
 #!/bin/bash
 # refresh-token.sh - Refresh expired token
-# Note: Requires a valid refresh_token from OAuth flow with offline_access scope
+# Note: Uses the refresh_token returned by the API key exchange (POST /api/v2/auth/token).
+# Tokens from an OAuth flow are refreshed at the OAuth token endpoint instead (see Authentication).
 
 REFRESH_TOKEN="your_refresh_token"
 BASE_URL="https://api.penfield.app"

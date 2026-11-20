@@ -29,8 +29,8 @@ POST https://api.penfield.app/api/v2/analysis/reflect
   "include_relationships": true,
   "include_clusters": true,
   "max_memories": 50,
-  "start_date": "2025-01-01",
-  "end_date": "2025-01-31",
+  "start_date": "2026-01-01",
+  "end_date": "2026-01-31",
   "recency_weight": 0.4,
   "access_weight": 0.3,
   "importance_weight": 0.2,
@@ -80,7 +80,7 @@ POST https://api.penfield.app/api/v2/analysis/reflect
         "memory_type": "fact",
         "importance": 0.9,
         "access_count": 0,
-        "created_at": "2025-01-06T12:00:00.000Z",
+        "created_at": "2026-01-06T12:00:00.288284Z",
         "age_hours": 2.16,
         "score": 0.597
       }
@@ -107,13 +107,22 @@ POST https://api.penfield.app/api/v2/analysis/reflect
         "description": "12 supports relationships"
       }
     ],
+    "contexts": [
+      {
+        "id": "bb0e8400-e29b-41d4-a716-446655440006",
+        "name": "API redesign handoff",
+        "created_at": "2026-01-05T09:09:43.175928Z",
+        "memory_count": 12
+      }
+    ],
     "statistics": {
       "total_memories_analyzed": 150,
       "memories_returned": 50,
       "average_age_hours": 2.54,
       "average_importance": 0.61,
       "total_access_count": 0,
-      "unique_topics": 20
+      "unique_topics": 20,
+      "contexts_saved": 1
     }
   },
   "meta": {...}
@@ -132,7 +141,9 @@ POST https://api.penfield.app/api/v2/analysis/reflect
 | `memory_clusters` | Grouped memories by pattern |
 | `emerging_patterns` | Detected behavioral patterns |
 | `relationship_insights` | Summary of relationship types |
+| `contexts` | Context checkpoints saved in the time window: `id`, `name`, `created_at` and `memory_count` for each. Empty array when there are none |
 | `statistics` | Aggregate statistics for the analysis |
+| `statistics.contexts_saved` | Number of entries in `contexts` |
 
 ### Use Cases
 
@@ -226,8 +237,8 @@ POST https://api.penfield.app/api/v2/analysis/summarize
       }
     ],
     "time_range": {
-      "oldest": "2025-01-06T10:00:00.000Z",
-      "newest": "2025-01-06T14:30:00.000Z",
+      "oldest": "2026-01-06T10:00:00.288284+00:00",
+      "newest": "2026-01-06T14:30:00.112233+00:00",
       "span_hours": 4.5
     }
   },
@@ -379,43 +390,80 @@ GET https://api.penfield.app/api/v2/memories/{memory_id}/history
   "status": "success",
   "data": {
     "current": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "content": "Current memory content...",
+      "id": "660f9500-f30c-52e5-b827-557766551111",
+      "content": "The office is on floor three",
       "memory_type": "fact",
       "importance": 0.8,
-      "confidence": 0.9,
-      "created_at": "2025-01-06T12:00:00.000Z",
-      "updated_at": "2025-01-06T12:00:00.000Z"
+      "confidence": 0.8,
+      "created_at": "2026-01-06T12:00:00.483094Z",
+      "updated_at": "2026-01-06T12:00:00.504427Z",
+      "metadata": {
+        "evolution_type": "correction",
+        "version_number": 2,
+        "parent_memory_id": "550e8400-e29b-41d4-a716-446655440000",
+        "evolution_metadata": {}
+      },
+      ...
     },
     "history": [
       {
         "id": "550e8400-e29b-41d4-a716-446655440000",
         "version": 1,
-        "content": "Original content...",
-        "created_at": "2025-01-01T00:00:00.000Z",
+        "content": "The office is on floor two",
+        "created_at": "2026-01-01T00:00:00.617849+00:00",
+        "lifecycle_state": "corrected",
+        "is_active": false
+      },
+      {
+        "id": "660f9500-f30c-52e5-b827-557766551111",
+        "version": 2,
+        "content": "The office is on floor three",
+        "created_at": "2026-01-06T12:00:00.483094+00:00",
         "lifecycle_state": "active",
-        "is_active": true
+        "is_active": true,
+        "evolution": {
+          "type": "correction",
+          "reason": "Fixed factual error based on new information",
+          "created_by": "880e8400-e29b-41d4-a716-446655440003",
+          "created_at": "2026-01-06T12:00:00.541451+00:00"
+        }
       }
     ],
-    "total_versions": 1
+    "total_versions": 2
   },
   "metadata": {
-    "memory_id": "550e8400-e29b-41d4-a716-446655440000",
-    "versions_count": 1
+    "memory_id": "660f9500-f30c-52e5-b827-557766551111",
+    "versions_count": 2
   }
 }
 ```
+
+A memory that has never been evolved has one entry in `history`. The request works with the id of any version, old or current.
 
 ### Response Fields
 
 | Field | Description |
 |-------|-------------|
-| `current` | Full memory object for the current version |
-| `history` | Array of version records |
-| `history[].version` | Version number |
-| `history[].lifecycle_state` | State: `active`, `evolved`, `deprecated` |
+| `current` | Full [memory object](memories.md#response-fields) for the current version |
+| `history` | Array of version records, oldest first |
+| `history[].id` | Memory id of that version |
+| `history[].version` | Version number, starting at 1 |
+| `history[].lifecycle_state` | State of that version (see below) |
 | `history[].is_active` | Whether this version is current |
+| `history[].evolution` | Details of the evolve call that created the version, when available: `type`, `reason`, `created_by`, `created_at` |
 | `total_versions` | Total number of versions |
+| `metadata` | `memory_id` (the id you asked for) and `versions_count`. Note the key is `metadata` on this endpoint |
+
+### Lifecycle States
+
+| State | Meaning |
+|-------|---------|
+| `active` | The current version |
+| `corrected` | Replaced by a `correction` |
+| `superseded` | Replaced by an `update`, `expansion` or `contradiction` |
+| `archived` | Replaced by a `deprecation` |
+
+The full list of values is in [Enums](../schemas/enums.md#lifecycle-states).
 
 ### Evolution Types
 
@@ -437,19 +485,6 @@ Report a contradiction between two memories.
 POST https://api.penfield.app/api/v2/memories/contradictions
 ```
 
-### Status
-
-~~**Not Yet Available**~~ - This endpoint is now **AVAILABLE**. Use it to report contradictions between memories:
-
-```json
-POST /api/v2/relationships
-{
-  "from_id": "memory-1",
-  "to_id": "memory-2",
-  "relationship_type": "contradicts"
-}
-```
-
 ### Request Body
 
 ```json
@@ -463,6 +498,16 @@ POST /api/v2/relationships
   }
 }
 ```
+
+### Request Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `source_memory_id` | UUID | Yes | First memory |
+| `target_memory_id` | UUID | Yes | The memory that conflicts with it |
+| `contradiction_type` | string | Yes | `direct`, `partial` or `contextual` |
+| `confidence` | float | No | Confidence that the two conflict (0.0-1.0, default 0.5) |
+| `metadata` | object | No | Custom key-value data |
 
 ### Contradiction Types
 
@@ -478,17 +523,31 @@ POST /api/v2/relationships
 {
   "status": "success",
   "data": {
-    "id": "contradiction-uuid",
+    "id": "990e8400-e29b-41d4-a716-446655440004",
     "source_memory_id": "550e8400-e29b-41d4-a716-446655440000",
-    "target_memory_id": "conflicting-memory-uuid",
+    "target_memory_id": "660f9500-f30c-52e5-b827-557766551111",
     "contradiction_type": "direct",
     "resolution_status": "unresolved",
-    "detected_at": "2025-01-06T12:00:00.000Z",
-    "detected_by": "user"
+    "resolution_id": null,
+    "detected_at": "2026-01-06T12:00:00.177927Z",
+    "detected_by": "880e8400-e29b-41d4-a716-446655440003",
+    "confidence": 0.8,
+    "metadata": {
+      "description": "These memories state opposite facts"
+    }
   },
   "meta": {...}
 }
 ```
+
+`detected_by` is the id of the user who reported the contradiction. `resolution_id` stays `null` until the contradiction is resolved.
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 404 | `RES_NOT_FOUND` | Source or target memory not found |
+| 422 | `VAL_VALIDATION_FAILED` | Invalid request body, such as an unknown `contradiction_type` |
 
 ---
 
@@ -505,21 +564,25 @@ GET https://api.penfield.app/api/v2/memories/{memory_id}/contradictions
 ```json
 {
   "status": "success",
-  "data": {
-    "contradictions": [
-      {
-        "id": "contradiction-uuid",
-        "target_memory_id": "conflicting-memory-uuid",
-        "contradiction_type": "direct",
-        "resolution_status": "unresolved",
-        "confidence": 0.85,
-        "detected_at": "2025-01-06T12:00:00.000Z"
-      }
-    ]
-  },
+  "data": [
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440004",
+      "source_memory_id": "550e8400-e29b-41d4-a716-446655440000",
+      "target_memory_id": "660f9500-f30c-52e5-b827-557766551111",
+      "contradiction_type": "direct",
+      "resolution_status": "unresolved",
+      "resolution_id": null,
+      "detected_at": "2026-01-06T12:00:00.177927Z",
+      "detected_by": "880e8400-e29b-41d4-a716-446655440003",
+      "confidence": 0.8,
+      "metadata": {}
+    }
+  ],
   "meta": {...}
 }
 ```
+
+`data` is the array itself. A contradiction is listed for both of its memories, the source and the target. A memory with no contradictions returns an empty array.
 
 ---
 
@@ -530,10 +593,6 @@ Mark a contradiction as resolved.
 ```
 POST https://api.penfield.app/api/v2/memories/contradictions/{contradiction_id}/resolve
 ```
-
-### Status
-
-This endpoint is now **AVAILABLE**. Use it to resolve reported contradictions.
 
 ### Request Body
 
@@ -554,13 +613,47 @@ This endpoint is now **AVAILABLE**. Use it to resolve reported contradictions.
 | `choose_memory_2` | Accept target memory as correct |
 | `keep_both` | Keep both memories (mark as contextual) |
 
+`new_content` is used only by `create_new`. `reason` is optional.
+
+### Response
+
+```json
+{
+  "status": "success",
+  "data": {
+    "contradiction_id": "990e8400-e29b-41d4-a716-446655440004",
+    "resolution": "choose_memory_1",
+    "resolution_memory_id": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "resolved"
+  },
+  "meta": {...}
+}
+```
+
+### What Resolving Does
+
+| Resolution | Result |
+|------------|--------|
+| `choose_memory_1` | The source memory stays active and is the `resolution_memory_id`. The target memory is deactivated |
+| `choose_memory_2` | The target memory stays active and is the `resolution_memory_id`. The source memory is deactivated |
+| `create_new` | A new memory is created from `new_content` and is the `resolution_memory_id`. Both original memories are deactivated |
+| `keep_both` | Both memories stay active |
+
+A deactivated memory is no longer returned by `GET /memories/{id}` (404), by search, or by the default memory list. [List Memories](memories.md#list-memories) still shows it with `include_inactive=true`. The contradiction's `resolution_status` becomes `resolved` and its `resolution_id` is set to the `resolution_memory_id`.
+
 ### Resolution Status
 
 | Status | Description |
 |--------|-------------|
 | `unresolved` | Contradiction not yet addressed |
-| `resolved` | Contradiction resolved with new information |
-| `accepted` | One version accepted as correct |
+| `resolved` | Contradiction has been resolved |
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | `VAL_VALIDATION_FAILED` | `create_new` without `new_content`, or the contradiction is already resolved |
+| 404 | `RES_NOT_FOUND` | Contradiction not found |
 
 ---
 
@@ -586,9 +679,9 @@ POST https://api.penfield.app/api/v2/memories/{memory_id}/evolve
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `new_content` | string | Yes | New memory content |
-| `evolution_type` | string | Yes | Type of evolution |
-| `reason` | string | No | Explanation for change |
+| `new_content` | string | Yes | New memory content (1-10,000 characters) |
+| `evolution_type` | string | Yes | `correction`, `update`, `expansion`, `contradiction` or `deprecation` (see [Evolution Types](#evolution-types)) |
+| `reason` | string | No | Explanation for change. Shown in the [history](#memory-evolution-history) |
 
 ### Response
 
@@ -597,19 +690,56 @@ POST https://api.penfield.app/api/v2/memories/{memory_id}/evolve
   "status": "success",
   "data": {
     "original_memory_id": "550e8400-e29b-41d4-a716-446655440000",
-    "new_memory_id": "new-version-uuid",
-    "evolution_id": "evolution-uuid",
+    "new_memory_id": "660f9500-f30c-52e5-b827-557766551111",
+    "evolution_id": "aa0e8400-e29b-41d4-a716-446655440005",
     "evolution_type": "correction",
-    "version": 2,
-    "created_at": "2025-01-06T12:00:00.000Z"
+    "version": 2
   },
   "meta": {...}
 }
 ```
 
+### Response Fields
+
+| Field | Description |
+|-------|-------------|
+| `original_memory_id` | The memory that was evolved |
+| `new_memory_id` | The new version. It is a new memory with its own id |
+| `evolution_id` | Identifier of the evolution record |
+| `evolution_type` | The type that was requested |
+| `version` | Version number of the new memory |
+
+### How Evolve Works
+
+Evolve keeps the old version instead of overwriting it. Use it when the change itself is worth remembering: a correction, a decision that was reversed, a fact that went out of date. For a plain edit with no history, use [Update Memory](memories.md#update-memory).
+
+1. **A new memory is created** with `new_content`. It has a new id and keeps the original's `memory_type`, `importance`, `confidence` and `metadata`. Its `metadata` also records `evolution_type`, `version_number` and `parent_memory_id`.
+2. **The original becomes inactive.** Its `lifecycle_state` changes according to the evolution type:
+
+    | Evolution type | Original's new state |
+    |----------------|----------------------|
+    | `correction` | `corrected` |
+    | `update`, `expansion`, `contradiction` | `superseded` |
+    | `deprecation` | `archived` |
+
+3. **The two versions are linked** by a relationship:
+
+    | Evolution type | Relationship type |
+    |----------------|-------------------|
+    | `correction`, `deprecation` | `supersedes` |
+    | `update` | `updates` |
+    | `expansion`, `contradiction` | `evolution_of` |
+
 ### Notes
 
-- Creates a new memory linked to the original
-- Original memory's `lifecycle_state` is updated
-- Relationship created between versions
-- Use `include_inactive=true` in list to see old versions
+- From then on, use `new_memory_id`. `GET /memories/{original id}` returns 404 once the memory has been evolved
+- Old versions are listed by [List Memories](memories.md#list-memories) with `include_inactive=true`, and by [Memory Evolution History](#memory-evolution-history), which accepts the id of any version
+- Evolving the new version again adds a third version, and so on
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
+| 404 | `RES_NOT_FOUND` | Memory not found |
+| 422 | `VAL_VALIDATION_FAILED` | Invalid request body, such as an unknown `evolution_type` or content over 10,000 characters |

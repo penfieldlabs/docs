@@ -35,7 +35,7 @@ Most platforms use the same core configuration. Copy and adapt as needed:
 
 ## Authorization
 
-The first time you use Penfield in any application, a browser window will open asking you to authorize access. After authorizing once, other applications will share the same mcp-remote authorization automatically. If mcp-remote is upgrade, a new authorization may be required.
+The first time you use Penfield in any application, a browser window will open asking you to authorize access. After authorizing once, other applications will share the same mcp-remote authorization automatically. If mcp-remote is upgraded, a new authorization may be required.
 
 If authorization doesn't trigger automatically, try restarting the application after adding the configuration.
 
@@ -229,9 +229,9 @@ Add the Penfield configuration:
 
 Quit and restart Windsurf. If you haven't authorized Penfield previously, a browser tab will open automatically.
 
-After authorization, click the plug icon to verify Penfield is connected with 18 tools available:
+After authorization, click the plug icon to verify Penfield is connected and its tools are available:
 
-![Windsurf showing Penfield connected with 18 tools](./img/windsurf-03-connected.png)
+![Windsurf showing Penfield connected](./img/windsurf-03-connected.png)
 
 ---
 

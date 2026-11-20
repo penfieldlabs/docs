@@ -14,7 +14,7 @@ There are three ways to connect, from simplest to most powerful:
 
 ## Option 1: claude.ai Connector
 
-If you've already added Penfield as a connector on [claude.ai](https://claude.ai), Claude Code automatically picks it up. No additional setup is needed.
+If you've already added Penfield as a connector on [claude.ai](https://claude.ai) (see [Claude Setup](claude-setup.md)), Claude Code automatically picks it up. No additional setup is needed.
 
 Launch Claude Code and type "Penfield Awaken" to verify the connection:
 
@@ -56,7 +56,7 @@ Run the `/mcp` command to view your MCP servers:
 
 ### Step 4: Authenticate Penfield
 
-1. Select **penfield-mcp** from the list
+1. Select **penfield** from the list
 2. Select **Authenticate**
 
 ![Penfield MCP server details with Authenticate option](./img/claude-code-02-authenticate.png)

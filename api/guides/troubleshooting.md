@@ -6,23 +6,26 @@ Solutions to common issues when using the Penfield API.
 
 ## Authentication Issues
 
-### "Invalid credentials" (401)
+### "Invalid API key" or "Invalid token" (401)
 
 **Symptom:**
 ```json
 {
   "status": "error",
   "error": {
-    "code": "AUTH_INVALID_CREDENTIALS",
-    "message": "Invalid credentials"
+    "code": "AUTH_UNAUTHORIZED",
+    "message": "Invalid API key"
   }
 }
 ```
 
-**Causes:**
-1. Wrong API key format
-2. API key was revoked
-3. Using API key instead of JWT token
+The message tells the cases apart:
+
+| Message | Cause |
+|---------|-------|
+| `Invalid API key` | The key sent to `/auth/token` has the wrong format or was revoked |
+| `Invalid token` | The bearer token is not a valid access token. You get this when an API key is sent to an endpoint that expects the JWT |
+| `No access token provided (expected Authorization header or cookie)` | The `Authorization` header is missing |
 
 **Solutions:**
 ```bash
@@ -35,18 +38,9 @@ curl -X POST https://api.penfield.app/api/v2/auth/token \
 -H "Content-Type: application/json"
 ```
 
-### "Token expired" (401)
+### Token expired (401)
 
-**Symptom:**
-```json
-{
-  "status": "error",
-  "error": {
-    "code": "AUTH_TOKEN_EXPIRED",
-    "message": "Token expired"
-  }
-}
-```
+**Symptom:** a token that worked before now gets a 401. Access tokens last 24 hours.
 
 **Solution:**
 ```bash
@@ -68,15 +62,18 @@ curl -X POST https://api.penfield.app/api/v2/auth/refresh \
   "status": "error",
   "error": {
     "code": "AUTH_INSUFFICIENT_PERMISSIONS",
-    "message": "Insufficient permissions. Required scope(s): write"
+    "message": "Insufficient permissions. Required scope(s): memories:write, write, admin"
   }
 }
 ```
 
+The message lists the scopes that would allow the call.
+
 **Solution:**
-Request a new token with the required scopes:
+Use a token (or an API key) that has the required scope:
 - `read` - For reading/searching
-- `write` - For creating/updating/deleting
+- `write` - For creating/updating
+- `delete` - For deleting memories, relationships, documents and artifacts
 - `profile` - For profile access
 - `offline_access` - For refresh tokens
 
@@ -90,7 +87,7 @@ curl -s https://api.penfield.app/.well-known/oauth-authorization-server | \
 
 ## Validation Errors
 
-### "Validation failed" (400)
+### "Request validation failed" (422)
 
 **Symptom:**
 ```json
@@ -98,14 +95,16 @@ curl -s https://api.penfield.app/.well-known/oauth-authorization-server | \
   "status": "error",
   "error": {
     "code": "VAL_VALIDATION_FAILED",
-    "message": "Validation failed",
-    "details": {
-      "field": "content",
-      "issue": "exceeds maximum length"
+    "message": "Request validation failed",
+    "details": null,
+    "field_errors": {
+      "content": ["Value error, Memory content is 10,001 characters, exceeds the 10,000 character limit. ..."]
     }
   }
 }
 ```
+
+`field_errors` names each field that failed and why.
 
 **Common causes and limits:**
 
@@ -116,14 +115,17 @@ curl -s https://api.penfield.app/.well-known/oauth-authorization-server | \
 | `tags` | 10 max | Use fewer, broader tags |
 | `memory_type` | 11 valid types | Check [Memory Types Guide](./memory-types.md) |
 
-### "Invalid UUID format" (400)
+### Invalid UUID (422)
 
 **Symptom:**
 ```json
 {
   "error": {
-    "code": "VAL_UUID_INVALID",
-    "message": "Invalid UUID format"
+    "code": "VAL_VALIDATION_FAILED",
+    "message": "Request validation failed",
+    "field_errors": {
+      "memory_id": ["Input should be a valid UUID, ..."]
+    }
   }
 }
 ```
@@ -141,7 +143,9 @@ except ValueError:
     raise ValueError(f"Invalid UUID: {memory_id}")
 ```
 
-### "Invalid relationship type" (400)
+### Invalid relationship type (422)
+
+**Symptom:** `VAL_VALIDATION_FAILED` with `field_errors.relationship_type`.
 
 **Solution:**
 Use one of the 24 valid relationship types:
@@ -171,10 +175,13 @@ See [Relationship Types Guide](./relationship-types.md).
    - Wait a few seconds after creating
    - Embeddings are generated asynchronously
 
-3. **Wrong source_type filter**
+3. **Wrong source filter**
    ```json
-   // This only searches documents, not memories
+   // MCP recall: this only searches documents, not memories
    {"query": "my note", "source_type": "document"}
+
+   // REST search: the same filter
+   {"query": "my note", "source_types": ["document_upload"]}
 
    // Search all
    {"query": "my note"}
@@ -183,7 +190,7 @@ See [Relationship Types Guide](./relationship-types.md).
 4. **Date filter too narrow**
    ```json
    // Make sure your memory was created in this range
-   {"query": "test", "start_date": "2025-01-01", "end_date": "2025-01-07"}
+   {"query": "test", "start_date": "2026-01-01", "end_date": "2026-01-07"}
    ```
 
 ### Low Relevance Scores
@@ -203,9 +210,11 @@ The hybrid search combines:
 - Graph (relationship traversal)
 
 If important results appear lower:
-1. Increase their `importance` score
+1. Include relevant keywords in their content
 2. Add more relationships to them
-3. Include relevant keywords in their content
+3. Adjust the search weights (`bm25_weight`, `vector_weight`, `graph_weight`) toward the method that should count most
+
+The `importance` score does not change the ranking. To leave out low-importance memories, filter with `importance_threshold`.
 
 ---
 
@@ -224,12 +233,12 @@ If important results appear lower:
 }
 ```
 
-**Response headers:**
+**Response headers** (the values are examples; the limit depends on the endpoint):
 ```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 0
-X-RateLimit-Reset: 1704542400
-Retry-After: 60
+x-ratelimit-limit: 35
+x-ratelimit-remaining: 0
+x-ratelimit-reset: 1704542400
+retry-after: 3
 ```
 
 **Solutions:**
@@ -308,7 +317,15 @@ curl -X GET "https://api.penfield.app/api/v2/memories/$MEMORY_ID" \
 -H "Authorization: Bearer $TOKEN"
 ```
 
-### "Relationship already exists" (409)
+### "Relationship already exists" (400)
+
+**Symptom:** `VAL_VALIDATION_FAILED`, message `Relationship validation failed`, with the reason in `details.errors`:
+
+```json
+"details": {
+  "errors": ["Relationship supports already exists between these memories"]
+}
+```
 
 **Cause:** Trying to create a duplicate relationship
 
@@ -336,7 +353,7 @@ Creating A → B → C → A can cause infinite traversal loops.
 - Must include filename (not just directory)
 - No `..` (path traversal)
 - No hidden files starting with `.`
-- Max depth: 10 levels
+- Max depth: 10 folders (the file name does not count)
 - Valid chars: alphanumeric, `-`, `_`, `.`, `/`
 
 **Examples:**
@@ -350,10 +367,11 @@ Creating A → B → C → A can cause infinite traversal loops.
 
 ### "Artifact already exists" (409)
 
+Saving does not overwrite. There is no call that updates an artifact in place.
+
 **Solutions:**
-1. Use a different path
-2. Delete existing artifact first
-3. Update content instead of creating new
+1. Delete the existing artifact, then save the new content at the same path
+2. Save under a different path
 
 ---
 
@@ -362,10 +380,10 @@ Creating A → B → C → A can cause infinite traversal loops.
 ### Tool Not Working
 
 **Checklist:**
-1. MCP server URL correct?
-2. Authorization header set?
-3. API key has required scopes?
-4. Request body format correct?
+1. MCP server URL correct? It is `https://mcp.penfield.app`
+2. Is the connector signed in? The MCP server uses an OAuth sign-in, not an API key. If tools stopped working, [reconnect](../../onboarding/reconnect-penfield.md)
+3. Does the tool appear in your client's tool list? See the [tool reference](../../mcp/mcp-integration.md)
+4. Do the arguments match the tool's parameters?
 
 ### Personality Not Loading (awaken)
 
@@ -412,7 +430,7 @@ echo $TOKEN | cut -d. -f2 | base64 -d 2>/dev/null | jq
 
 Check:
 - `exp` - Expiration time
-- `scope` - Granted scopes
+- `scopes` - Granted scopes (a list)
 - `tenant_id` - Correct tenant
 
 ---

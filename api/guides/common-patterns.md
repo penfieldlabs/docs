@@ -267,11 +267,14 @@ Multiple agents contributing to same project:
 
 Other agents can search:
 ```json
+POST /api/v2/search/hybrid
 {
   "query": "dashboard security",
-  "tags": ["dashboard"]
+  "tags": "dashboard"
 }
 ```
+
+In the REST API `tags` is a comma-separated string (`"dashboard,security"`). The MCP `recall` tool takes an array (`["dashboard", "security"]`).
 
 ---
 
@@ -286,7 +289,7 @@ After uploading a document:
 POST /api/v2/search/hybrid
 {
   "query": "main conclusions",
-  "source_type": "document",
+  "source_types": ["document_upload"],
   "limit": 5
 }
 ```
@@ -323,7 +326,7 @@ POST /api/v2/search/hybrid
   /diagrams/
     flow.svg
   /notes/
-    meeting-2025-01-06.md
+    meeting-2026-01-06.md
 /project-b/
   ...
 ```
@@ -342,11 +345,49 @@ POST /api/v2/artifacts
 GET /api/v2/artifacts/list?prefix=/project-a/docs/
 ```
 
+### Pattern: Make an Artifact Findable
+
+Artifacts are not searched. Pair each artifact that matters with a memory that says what the file is and where it lives. Search finds the memory, and the path in it leads to the file.
+
+```json
+POST /api/v2/artifacts
+{
+  "path": "/project-a/docs/architecture.md",
+  "content": "# Architecture\n\n..."
+}
+```
+
+```json
+POST /api/v2/memories
+{
+  "content": "Architecture overview for Project A: services, data flow, caching layer and deployment layout. Full document: /project-a/docs/architecture.md",
+  "memory_type": "reference",
+  "tags": ["project-a", "architecture"]
+}
+```
+
+Connect the pointer memory to related memories with relationships, the same as any other memory. See [Making Artifacts Findable](../endpoints/artifacts.md#making-artifacts-findable).
+
+### Pattern: Update an Artifact
+
+Saving to a path that already exists is refused. To replace a file, delete it and save the new content:
+
+```json
+DELETE /api/v2/artifacts?path=/project-a/docs/architecture.md
+POST /api/v2/artifacts
+{
+  "path": "/project-a/docs/architecture.md",
+  "content": "# Architecture (revised)\n\n..."
+}
+```
+
 ### Pattern: Version Artifacts with Timestamps
 
+To keep earlier versions, save each one under its own name:
+
 ```
-/project/docs/architecture-2025-01-05.md
-/project/docs/architecture-2025-01-06.md
+/project/docs/architecture-2026-01-05.md
+/project/docs/architecture-2026-01-06.md
 ```
 
 Or use memories to track artifact history:

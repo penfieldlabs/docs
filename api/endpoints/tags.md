@@ -44,13 +44,16 @@ POST https://api.penfield.app/api/v2/memories/{memory_id}/tags
 Tags are automatically normalized:
 - Converted to lowercase
 - Spaces and underscores replaced with hyphens
-- Invalid characters removed
+- Every character other than `a-z`, `0-9` and `-` is removed
 
 | Input | Normalized |
 |-------|------------|
 | `"Python"` | `"python"` |
 | `"Best Practices"` | `"best-practices"` |
 | `"async_await"` | `"async-await"` |
+| `"project:alpha"` | `"projectalpha"` |
+
+A tag can be up to 50 characters long. See [Tag Limits](#tag-limits).
 
 ### Response
 
@@ -59,7 +62,7 @@ Tags are automatically normalized:
   "status": "success",
   "data": {
     "memory_id": "550e8400-e29b-41d4-a716-446655440000",
-    "tags": ["python", "async", "best-practices"],
+    "tags": ["async", "best-practices", "python"],
     "warnings": null
   },
   "meta": {...}
@@ -71,15 +74,34 @@ Tags are automatically normalized:
 | Field | Description |
 |-------|-------------|
 | `memory_id` | The memory identifier |
-| `tags` | Complete list of tags now on the memory |
-| `warnings` | Array of warning messages, or null if none |
+| `tags` | Complete list of tags now on the memory, in alphabetical order |
+| `warnings` | `null`, or an array with one object for each tag that was not stored |
+
+When a tag is not stored, the other tags in the request are still added and the response says which one was dropped:
+
+```json
+{
+  "memory_id": "550e8400-e29b-41d4-a716-446655440000",
+  "tags": ["async", "async-await", "best-practices", "python"],
+  "warnings": [
+    {
+      "original": "x",
+      "normalized": null,
+      "reason": "Tag 'x' normalized to empty string"
+    }
+  ]
+}
+```
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
+| 400 | `VAL_VALIDATION_FAILED` | The memory would have more than 10 tags (`Memory would have 12 tags, exceeding maximum of 10 tags`) |
+| 400 | `VAL_VALIDATION_FAILED` | None of the tags in the request is valid (`All provided tags were invalid`) |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
 | 404 | `RES_NOT_FOUND` | Memory not found |
-| 422 | `VAL_VALIDATION_FAILED` | Would exceed 10 tags per memory |
+| 422 | `VAL_VALIDATION_FAILED` | The request body is not valid |
 
 ---
 
@@ -106,7 +128,7 @@ DELETE https://api.penfield.app/api/v2/memories/{memory_id}/tags
   "status": "success",
   "data": {
     "memory_id": "550e8400-e29b-41d4-a716-446655440000",
-    "tags": ["python", "async"],
+    "tags": ["async", "python"],
     "warnings": null
   },
   "meta": {...}
@@ -119,7 +141,9 @@ DELETE https://api.penfield.app/api/v2/memories/{memory_id}/tags
 |-------|-------------|
 | `memory_id` | The memory identifier |
 | `tags` | Remaining tags after removal |
-| `warnings` | Array of warning messages, or null |
+| `warnings` | `null`, or an array of warning objects (same shape as in [Add Tags](#add-tags-to-memory)) |
+
+Removing a tag needs the `write` scope, not `delete`. Asking to remove a tag the memory does not have is not an error.
 
 ---
 
@@ -136,7 +160,7 @@ GET https://api.penfield.app/api/v2/memories/{memory_id}/tags
 ```json
 {
   "status": "success",
-  "data": ["python", "async", "best-practices"],
+  "data": ["async", "best-practices", "python"],
   "meta": {...}
 }
 ```
@@ -153,6 +177,13 @@ List all tags with usage counts.
 GET https://api.penfield.app/api/v2/tags
 ```
 
+### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | integer | `1` | Page number (minimum 1) |
+| `per_page` | integer | `50` | Tags per page (1-100) |
+
 ### Response
 
 ```json
@@ -164,22 +195,29 @@ GET https://api.penfield.app/api/v2/tags
         "id": "550e8400-e29b-41d4-a716-446655440000",
         "name": "python",
         "usage_count": 45,
-        "created_at": "2025-01-01T00:00:00.000Z"
+        "created_at": "2026-01-01T00:00:00.038771Z"
       },
       {
         "id": "660f9500-f30c-52e5-b827-557766551111",
         "name": "javascript",
         "usage_count": 32,
-        "created_at": "2025-01-02T00:00:00.000Z"
+        "created_at": "2026-01-02T00:00:00.723359Z"
       },
       {
         "id": "770e8400-e29b-41d4-a716-446655440002",
         "name": "machine-learning",
         "usage_count": 28,
-        "created_at": "2025-01-03T00:00:00.000Z"
+        "created_at": "2026-01-03T00:00:00.112233Z"
       }
     ],
-    "total": 156
+    "pagination": {
+      "page": 1,
+      "per_page": 50,
+      "total": 156,
+      "pages": 4,
+      "has_next": true,
+      "has_prev": false
+    }
   },
   "meta": {...}
 }
@@ -226,9 +264,9 @@ GET https://api.penfield.app/api/v2/tags/{tag}/memories
         "content": "Python async programming uses asyncio...",
         "memory_type": "fact",
         "importance": 0.8,
-        "confidence": 0.9,
-        "created_at": "2025-01-01T00:00:00.000Z",
-        "tags": ["python", "async"],
+        "confidence": 0.8,
+        "created_at": "2026-01-01T00:00:00.288284Z",
+        "tags": ["async", "python"],
         ...
       }
     ],
@@ -236,7 +274,9 @@ GET https://api.penfield.app/api/v2/tags/{tag}/memories
       "page": 1,
       "per_page": 20,
       "total": 45,
-      "pages": 3
+      "pages": 3,
+      "has_next": true,
+      "has_prev": false
     }
   },
   "meta": {...}
@@ -248,7 +288,7 @@ GET https://api.penfield.app/api/v2/tags/{tag}/memories
 | Field | Description |
 |-------|-------------|
 | `items` | Array of Memory objects with the specified tag |
-| `pagination` | Pagination metadata (page, per_page, total, pages) |
+| `pagination` | Pagination metadata (page, per_page, total, pages, has_next, has_prev) |
 
 ### Notes
 
@@ -319,5 +359,7 @@ curl -X GET "https://api.penfield.app/api/v2/memories?tags=python,javascript" \
 | Limit | Value |
 |-------|-------|
 | Max tags per memory | 10 |
-| Max tag length | 100 characters |
+| Max tag length | 50 characters |
 | Allowed characters | `a-z`, `0-9`, `-` |
+
+A tag that is not valid is not stored. [Add Tags](#add-tags-to-memory) reports each tag it did not store in `warnings`, and returns `400` when none of the tags in the request is valid.

@@ -33,9 +33,11 @@ curl https://api.penfield.app/.well-known/oauth-authorization-server
   "issuer": "https://auth.penfield.app",
   "authorization_endpoint": "https://auth.penfield.app/oauth/authorize",
   "token_endpoint": "https://auth.penfield.app/oauth/token",
-  "device_authorization_endpoint": "https://auth.penfield.app/oauth/device_authorization",
   "registration_endpoint": "https://auth.penfield.app/oauth/register",
-  "token_endpoint_auth_methods_supported": ["none"],
+  "introspection_endpoint": "https://auth.penfield.app/oauth/introspect",
+  "revocation_endpoint": "https://auth.penfield.app/oauth/revoke",
+  "device_authorization_endpoint": "https://auth.penfield.app/oauth/device_authorization",
+  "jwks_uri": "https://auth.penfield.app/oauth/jwks.json",
   "response_types_supported": ["code"],
   "grant_types_supported": [
     "authorization_code",
@@ -44,15 +46,20 @@ curl https://api.penfield.app/.well-known/oauth-authorization-server
     "urn:ietf:params:oauth:grant-type:device_code"
   ],
   "code_challenge_methods_supported": ["S256"],
-  "scopes_supported": ["read", "write", "profile", "offline_access"],
+  "token_endpoint_auth_methods_supported": ["none", "client_secret_post", "client_secret_basic"],
+  "introspection_endpoint_auth_methods_supported": ["client_secret_post", "client_secret_basic"],
+  "revocation_endpoint_auth_methods_supported": ["none"],
+  "scopes_supported": ["read", "write", "delete", "profile", "offline_access"],
   "response_modes_supported": ["query"],
   "authorization_response_iss_parameter_supported": true,
-  "service_documentation": "https://www.penfield.app/docs",
-  "dpop_signing_alg_values_supported": ["RS256", "ES256"]
+  "service_documentation": "https://portal.penfield.app/docs",
+  "ui_locales_supported": ["en-US"],
+  "op_policy_uri": "https://portal.penfield.app/privacy",
+  "op_tos_uri": "https://portal.penfield.app/terms"
 }
 ```
 
-> **Note on `token_endpoint_auth_methods_supported: ["none"]`:** This is standard OAuth 2.1 for public clients. The value `"none"` means no client secret is required at the token endpoint. Security is provided by PKCE (Proof Key for Code Exchange) - the `code_verifier` proves client identity without a shared secret. This is the recommended approach for native apps, SPAs, and CLI tools per OAuth 2.1 and RFC 7636.
+> **Note on `token_endpoint_auth_methods_supported`:** `"none"` is the standard OAuth 2.1 method for public clients: no client secret is required at the token endpoint. Security is provided by PKCE (Proof Key for Code Exchange) - the `code_verifier` proves client identity without a shared secret. This is the recommended approach for native apps, SPAs, and CLI tools per OAuth 2.1 and RFC 7636. The examples on this page use `"none"`. The server also lists `client_secret_post` and `client_secret_basic` for clients that hold a secret.
 
 ### Protected Resource Metadata (RFC 9728)
 
@@ -69,7 +76,7 @@ curl https://api.penfield.app/.well-known/oauth-protected-resource
   "scopes_supported": ["read", "write", "openid", "profile", "offline_access"],
   "bearer_methods_supported": ["header"],
   "resource_signing_alg_values_supported": ["HS256"],
-  "resource_documentation": "https://github.com/penfieldlabs/docs",
+  "resource_documentation": "https://portal.penfield.app/docs",
   "resource_policy_uri": "https://portal.penfield.app/privacy",
   "resource_tos_uri": "https://portal.penfield.app/terms"
 }
@@ -93,10 +100,15 @@ curl -s https://api.penfield.app/.well-known/oauth-authorization-server | \
 
 | Scope | Description |
 |-------|-------------|
-| `read` | Read memories, search |
-| `write` | Create, update, delete memories |
+| `read` | Read and search memories, relationships, documents and artifacts; run analysis |
+| `write` | Create and update memories, relationships, tags, documents and artifacts |
+| `delete` | Delete memories, relationships, documents and artifacts |
 | `profile` | Access user profile information |
 | `offline_access` | Receive refresh tokens |
+
+`delete` is a scope of its own. A token with `read` and `write` but without `delete` gets `403 AUTH_INSUFFICIENT_PERMISSIONS` on every delete call. Removing a tag from a memory needs `write`, not `delete`.
+
+API keys carry the permissions chosen when the key was created in the portal (read, write, delete).
 
 **Note:** Always check the discovery endpoint for the current list of supported scopes. The Protected Resource Metadata may list additional scopes like `openid`.
 
@@ -130,7 +142,7 @@ curl -X POST https://api.penfield.app/api/v2/auth/token \
   "data": {
     "access_token": "eyJhbGciOiJIUzI1NiIs...",
     "token_type": "Bearer",
-    "expires_in": 259200,
+    "expires_in": 86400,
     "tenant_id": "pf_...",
     "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
   },
@@ -155,6 +167,20 @@ GET https://api.penfield.app/api/v2/auth/verify
 ```bash
 curl -X GET https://api.penfield.app/api/v2/auth/verify \
 -H "Authorization: Bearer $JWT_TOKEN"
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "data": {
+    "valid": true,
+    "tenant_id": "pf_...",
+    "tenant_tier": "premium",
+    "expires_at": "2026-01-31T12:00:00Z"
+  },
+  "meta": {...}
+}
 ```
 
 ---
@@ -203,9 +229,19 @@ curl -X POST "$REG_URL" \
 ```json
 {
   "client_id": "dyn_abc123...",
-  "client_id_issued_at": 1704542400
+  "client_secret": "...",
+  "client_id_issued_at": 1704542400,
+  "client_secret_expires_at": 0,
+  "redirect_uris": ["http://localhost:8080/callback"],
+  "client_name": "my-cli-tool",
+  "scope": "read write offline_access",
+  "grant_types": ["urn:ietf:params:oauth:grant-type:device_code", "refresh_token"],
+  "response_types": ["code"],
+  "token_endpoint_auth_method": "none"
 }
 ```
+
+Keep the `client_id`. A public client (`token_endpoint_auth_method: "none"`) does not send the `client_secret`.
 
 ### Step 3: Request Device Code
 
@@ -223,7 +259,7 @@ curl -X POST "$DEVICE_AUTH_URL" \
   "user_code": "WDJB-MJHT",
   "verification_uri": "https://portal.penfield.app/device",
   "verification_uri_complete": "https://portal.penfield.app/device?user_code=WDJB-MJHT",
-  "expires_in": 900,
+  "expires_in": 600,
   "interval": 5
 }
 ```
@@ -251,14 +287,14 @@ curl -X POST "$TOKEN_URL" \
 | `authorization_pending` | Continue polling at `interval` seconds |
 | `slow_down` | Increase poll interval by 5 seconds |
 | `access_denied` | User denied - stop polling |
-| `expired_token` | Device code expired - restart flow |
+| `invalid_grant` | Device code expired or unknown (`Invalid or expired device code`) - restart flow |
 
 **Success Response:**
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "token_type": "Bearer",
-  "expires_in": 259200,
+  "expires_in": 86400,
   "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "scope": "read write offline_access"
 }
@@ -338,7 +374,7 @@ curl -X POST "$TOKEN_URL" \
 {
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
   "token_type": "Bearer",
-  "expires_in": 259200,
+  "expires_in": 86400,
   "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
   "scope": "read write offline_access"
 }
@@ -377,7 +413,7 @@ curl -X POST https://api.penfield.app/api/v2/auth/refresh \
   "data": {
     "access_token": "eyJhbGciOiJIUzI1NiIs...",
     "token_type": "Bearer",
-    "expires_in": 259200,
+    "expires_in": 86400,
     "tenant_id": "pf_...",
     "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
   },
@@ -404,7 +440,7 @@ curl -X POST "$TOKEN_URL" \
 {
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
   "token_type": "Bearer",
-  "expires_in": 259200,
+  "expires_in": 86400,
   "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
   "scope": "read write offline_access"
 }
@@ -431,9 +467,9 @@ Token lifetimes are configured by Penfield and may vary by environment.
 
 | Token | Typical Lifetime |
 |-------|-----------------|
-| Access token | 24-72 hours |
-| Refresh token | 7-30 days |
-| Device code | 15 minutes |
+| Access token | 24 hours |
+| Refresh token | 30 days |
+| Device code | 10 minutes |
 
 > **Important:** Do not hardcode these values. Always check `expires_in` in the response or decode the JWT to get the actual expiration.
 
@@ -454,12 +490,27 @@ curl -X GET https://api.penfield.app/api/v2/memories \
 
 ## Error Handling
 
-| Status | Error | Description |
-|--------|-------|-------------|
-| 401 | `invalid_token` | Token expired or invalid |
-| 401 | `invalid_credentials` | Bad API key |
-| 400 | `invalid_grant` | Invalid authorization code or refresh token |
+Errors come in two shapes, depending on which server answers.
+
+**API endpoints** (`https://api.penfield.app/api/v2/...`) use the standard Penfield [error format](../guides/error-handling.md):
+
+| Status | `error.code` | `error.message` | Meaning |
+|--------|--------------|-----------------|---------|
+| 401 | `AUTH_UNAUTHORIZED` | `Invalid token` | Access token expired or not valid |
+| 401 | `AUTH_UNAUTHORIZED` | `Invalid API key` | The API key sent to `/auth/token` was not accepted |
+| 401 | `AUTH_UNAUTHORIZED` | `No access token provided (expected Authorization header or cookie)` | No `Authorization` header |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | `Insufficient permissions. Required scope(s): ...` | The token lacks the scope the call needs |
+
+A 401 from the API also carries a `WWW-Authenticate: Bearer error="invalid_token"` header.
+
+**OAuth endpoints** (the token, device and registration endpoints on `auth.penfield.app`) use the OAuth error format, `{"error": "...", "error_description": "..."}`:
+
+| Status | `error` | Meaning |
+|--------|---------|---------|
 | 400 | `invalid_request` | Missing required parameters |
+| 400 | `invalid_grant` | Invalid or expired authorization code or device code |
+| 401 | `invalid_client` | The refresh token was not accepted (`Invalid token`) |
+| 400 | `authorization_pending`, `slow_down` | Device flow polling, see [Poll for Token](#step-5-poll-for-token) |
 
 ### Token Refresh Example
 

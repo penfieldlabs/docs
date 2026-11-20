@@ -34,11 +34,12 @@ POST https://api.penfield.app/api/v2/documents/upload
 | Markdown | `.md` | 20MB |
 | PDF | `.pdf` | 20MB |
 | EPUB | `.epub` | 20MB |
-| Word | `.doc`, `.docx` | 20MB |
 | HTML | `.html`, `.htm` | 20MB |
 | JSON | `.json` | 20MB |
 | YAML | `.yaml`, `.yml` | 20MB |
 | Code | `.py`, `.js`, `.ts` | 20MB |
+
+**Planned:** Word (`.doc`, `.docx`). Word files are not processed yet; uploading one returns `501 SYS_NOT_IMPLEMENTED`. Convert to PDF, Markdown or plain text first.
 
 ### Chunking Strategy
 
@@ -62,6 +63,8 @@ Different file types use optimized chunking strategies:
 
 ### Response
 
+`201 Created`
+
 ```json
 {
   "status": "success",
@@ -71,25 +74,26 @@ Different file types use optimized chunking strategies:
     "content_type": "application/pdf",
     "size": 1048576,
     "chunk_count": 45,
-    "processing_status": "completed",
-    "embedding_progress": {
-      "total": 45,
-      "completed": 45,
-      "pending": 0,
-      "failed": 0,
-      "percent_complete": 100.0
-    },
+    "processing_status": "active",
+    "embedding_progress": null,
     "metadata": {
+      "project": "documentation",
+      "version": "2.0",
+      "content_type": "application/pdf",
+      "upload_timestamp": "2026-01-06T12:00:00.500274+00:00",
+      "original_filename": "python-guide.pdf",
       "chunk_ids": ["uuid1", "uuid2", "..."],
       "message": "Document processed into 45 chunks. Embeddings are being generated.",
       "processing_time": 2.34
     },
-    "created_at": "2025-01-06T12:00:00.000Z",
-    "updated_at": "2025-01-06T12:00:00.000Z"
+    "created_at": "2026-01-06T12:00:00.502632Z",
+    "updated_at": "2026-01-06T12:00:01.114707Z"
   },
   "meta": {...}
 }
 ```
+
+The upload returns as soon as the document is chunked: `processing_status` is `active` and `embedding_progress` is `null`. Embeddings are generated in the background. [Get Document](#get-document) then shows `completed` and the progress counts. Any `metadata` you sent with the upload is returned alongside the fields the server adds.
 
 ### Processing Status
 
@@ -111,26 +115,14 @@ Documents are chunked synchronously, but embeddings are generated asynchronously
 - `failed`: Chunks that failed embedding
 - `percent_complete`: Completion percentage
 
-### Duplicate Detection
-
-If you upload a file with identical content (matching hash), the existing document is returned:
-
-```json
-{
-  "metadata": {
-    "duplicate_upload": true,
-    "message": "Document already exists. Returning existing document with 45 chunks."
-  }
-}
-```
-
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
+| 400 | `VAL_VALIDATION_FAILED` | Unsupported file type (`Invalid document: Unsupported file type: image/png`) |
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `write` scope |
 | 413 | - | File too large (max 20MB) |
-| 422 | `VAL_VALIDATION_FAILED` | Unsupported file type |
-| 501 | `NOT_IMPLEMENTED` | File type not yet supported |
+| 501 | `SYS_NOT_IMPLEMENTED` | File type not yet supported (Word) |
 
 ### Example
 
@@ -183,8 +175,8 @@ GET https://api.penfield.app/api/v2/documents/{document_id}
       "percent_complete": 100.0
     },
     "metadata": {},
-    "created_at": "2025-01-06T12:00:00.000Z",
-    "updated_at": "2025-01-06T12:00:00.000Z"
+    "created_at": "2026-01-06T12:00:00.502632Z",
+    "updated_at": "2026-01-06T12:00:02.502112Z"
   },
   "meta": {...}
 }
@@ -202,9 +194,16 @@ GET https://api.penfield.app/api/v2/documents/{document_id}
     "size": 1048576,
     "chunk_count": 45,
     "processing_status": "completed",
+    "embedding_progress": {
+      "total": 45,
+      "completed": 45,
+      "pending": 0,
+      "failed": 0,
+      "percent_complete": 100.0
+    },
     "metadata": {},
-    "created_at": "2025-01-06T12:00:00.000Z",
-    "updated_at": "2025-01-06T12:00:00.000Z",
+    "created_at": "2026-01-06T12:00:00.502632Z",
+    "updated_at": "2026-01-06T12:00:02.502112Z",
     "chunks": [
       {
         "id": "chunk-uuid-1",
@@ -212,24 +211,29 @@ GET https://api.penfield.app/api/v2/documents/{document_id}
         "chunk_index": 0,
         "content": "Chapter 1: Introduction to Python...",
         "start_char": 0,
-        "end_char": 1500,
+        "end_char": 399,
         "metadata": {
-          "page": 1,
-          "section": "Introduction"
+          "start_char": 0,
+          "end_char": 399,
+          "chunk_size": 399,
+          "filename": "python-guide.pdf",
+          "document_id": "550e8400-e29b-41d4-a716-446655440000",
+          "page_count": 12,
+          "chunk_strategy": "PDFChunking"
         },
         "embedding_status": "completed",
-        "created_at": "2025-01-06T12:00:00.000Z"
+        "created_at": "2026-01-06T12:00:00.592621Z"
       },
       {
         "id": "chunk-uuid-2",
         "document_id": "550e8400-e29b-41d4-a716-446655440000",
         "chunk_index": 1,
         "content": "Python is a versatile programming language...",
-        "start_char": 1500,
-        "end_char": 3000,
-        "metadata": {},
+        "start_char": 400,
+        "end_char": 780,
+        "metadata": {...},
         "embedding_status": "completed",
-        "created_at": "2025-01-06T12:00:00.000Z"
+        "created_at": "2026-01-06T12:00:00.592621Z"
       }
     ]
   },
@@ -258,7 +262,7 @@ GET https://api.penfield.app/api/v2/documents
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `page` | integer | `1` | Page number |
-| `per_page` | integer | `20` | Items per page (max 100) |
+| `per_page` | integer | `20` | Items per page (1-100) |
 
 ### Response
 
@@ -282,8 +286,8 @@ GET https://api.penfield.app/api/v2/documents
           "percent_complete": 100.0
         },
         "metadata": {},
-        "created_at": "2025-01-06T12:00:00.000Z",
-        "updated_at": "2025-01-06T12:00:00.000Z"
+        "created_at": "2026-01-06T12:00:00.502632Z",
+        "updated_at": "2026-01-06T12:00:02.502112Z"
       }
     ],
     "pagination": {
@@ -366,11 +370,13 @@ HTTP 204 No Content
 - All associated chunks are deleted
 - The original file is removed from storage
 - Embeddings are also removed
+- **Requires the `delete` scope**
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
+| 403 | `AUTH_INSUFFICIENT_PERMISSIONS` | The token does not have the `delete` scope |
 | 404 | `RES_NOT_FOUND` | Document not found |
 
 ---
@@ -385,7 +391,7 @@ POST https://api.penfield.app/api/v2/documents/{document_id}/reprocess
 
 ### Status
 
-**Not Yet Implemented** - Returns 501
+**Not Yet Implemented** - Returns `501 SYS_NOT_IMPLEMENTED`
 
 ### Future Behavior
 
