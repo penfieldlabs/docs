@@ -53,8 +53,6 @@ markdown_extensions:
   - tables
   - attr_list
   - md_in_html
-  - toc:
-      permalink: true
 
 nav:
   - Home: README.md
@@ -63,8 +61,8 @@ nav:
     - Example Custom Instructions: onboarding/example-custom-instructions.md
   - Platform Setup:
     - Overview: onboarding/README.md
-    - Claude: onboarding/claude-setup.md
     - ChatGPT: onboarding/chatgpt-setup.md
+    - Claude: onboarding/claude-setup.md
     - Claude Code: onboarding/claude-code-setup.md
     - Grok: onboarding/grok-setup.md
     - Manus: onboarding/manus-setup.md

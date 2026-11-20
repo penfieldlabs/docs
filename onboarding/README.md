@@ -6,8 +6,8 @@ Get started with Penfield across your preferred AI platform.
 
 ## Guides
 
-- [Claude Setup](claude-setup.md) - Connect Penfield to Claude
 - [ChatGPT Setup](chatgpt-setup.md) - Connect Penfield to ChatGPT
+- [Claude Setup](claude-setup.md) - Connect Penfield to Claude
 - [Claude Code Setup](claude-code-setup.md) - Connect Penfield to Claude Code (terminal)
 - [Grok Setup](grok-setup.md) - Connect Penfield to Grok
 - [Manus Setup](manus-setup.md) - Connect to Manus

@@ -123,8 +123,8 @@ Support: support@penfield.app
 
 Full setup guides with screenshots:
 
-- [Claude Setup](onboarding/claude-setup.md)
 - [ChatGPT Setup](onboarding/chatgpt-setup.md)
+- [Claude Setup](onboarding/claude-setup.md)
 - [Claude Code Setup](onboarding/claude-code-setup.md)
 - [Grok Setup](onboarding/grok-setup.md)
 - [Manus Setup](onboarding/manus-setup.md)
