@@ -63,7 +63,7 @@ Penfield will load your personality configuration and respond with a personalize
 
 Some apps need the connector turned on for each conversation, or selected by typing `@Penfield` before the message. If your AI does not respond to "Penfield Awaken", check that Penfield is enabled for the conversation, then ask it directly: "Call the awaken tool from Penfield."
 
-When the app asks for permission to use a Penfield tool, allow it. Choosing the "always allow" option lets your assistant use its memory without asking each time.
+When the app asks for permission to use a Penfield tool, allow it. Choosing the "always allow" option is up to you, of course, but it lets your assistant use its memory seamlessly, without asking each time.
 
 ---
 

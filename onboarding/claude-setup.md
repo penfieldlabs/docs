@@ -84,7 +84,7 @@ Penfield will load your personality configuration and respond with a personalize
 
 ![Awaken response showing personality loading](./img/setup-16-awaken-response.png)
 
-When Claude asks for permission to use a Penfield tool, choose the option to always allow it, so your assistant can use its memory without asking each time.
+When Claude asks for permission to use a Penfield tool, choose the option to always allow it (that is your choice, of course, but it lets your assistant use its memory seamlessly, without asking each time).
 
 ---
 
