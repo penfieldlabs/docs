@@ -263,13 +263,14 @@ After completing a research task, make sure to disable Research mode:
 
 ## Quick Test
 
-1. Say: "Remember this: My favorite color is blue"
-2. Close chat, open new one
-3. Say: **"Penfield Awaken"**
-4. Ask: "What's my favorite color?"
-5. AI should say: "Blue"
+1. Make up a code nobody could guess. Anything will do, for example `PF-7Q4-ZEBRA`. There is nothing special about that one, so use whatever you like
+2. Say: "Remember this: my Penfield test code is PF-7Q4-ZEBRA" (with your own code)
+3. Close chat, open new one
+4. Say: **"Penfield Awaken"**
+5. Ask: "What is my Penfield test code?"
+6. AI should answer with your exact code, and you should see it use a Penfield tool to find it
 
-If step 5 fails, Penfield isn't connected properly.
+If step 6 fails, Penfield isn't connected properly. The code only has to be something your AI cannot guess, so a right answer means Penfield stored it and found it again.
 
 ---
 
