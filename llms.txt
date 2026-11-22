@@ -78,12 +78,13 @@ There is no MCP tool that deletes a memory. Memories are deleted through the RES
 
 ## Setup guides by platform
 
+- [Antigravity](https://docs.penfield.app/onboarding/antigravity-setup/): add Penfield as a remote MCP server in Google Antigravity (app, IDE and CLI)
 - [ChatGPT](https://docs.penfield.app/onboarding/chatgpt-setup/): add Penfield as a custom MCP plugin in ChatGPT
 - [Claude](https://docs.penfield.app/onboarding/claude-setup/): add Penfield as a custom connector in Claude
 - [Claude Code](https://docs.penfield.app/onboarding/claude-code-setup/): connect Claude Code in the terminal
 - [Grok](https://docs.penfield.app/onboarding/grok-setup/): add Penfield as a custom connector in Grok
 - [Manus](https://docs.penfield.app/onboarding/manus-setup/): connect Manus
-- [MCP Remote](https://docs.penfield.app/onboarding/mcp-remote-setup/): Cursor, Windsurf, Gemini CLI, Antigravity, LM Studio and other apps configured with a file
+- [MCP Remote](https://docs.penfield.app/onboarding/mcp-remote-setup/): Cursor, Windsurf, LM Studio and other apps that connect through mcp-remote
 - [Perplexity](https://docs.penfield.app/onboarding/perplexity-setup/): connect Perplexity and the Comet browser
 - [Other MCP Clients](https://docs.penfield.app/onboarding/other-clients/): connection details and generic steps for any MCP client
 - [Troubleshooting](https://docs.penfield.app/onboarding/reconnect-penfield/): check, reconnect and reinstall the connection

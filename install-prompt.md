@@ -77,12 +77,11 @@ Known apps:
 - Claude Code: run   claude mcp add --transport http --scope user penfield https://mcp.penfield.app   then type /mcp, select penfield and choose Authenticate.
 - ChatGPT (web): Plugins (left sidebar) > Add > "Add custom MCP server". Name: Penfield. Server URL: https://mcp.penfield.app. Authentication: OAuth. Scroll down, tick "I understand and want to continue", click "Create as a plugin", then "Continue to Penfield" and Authorize. In a chat, type @Penfield.
 - Grok: Settings > Connect Apps > scroll to the bottom > "Add a custom connector". Name: Penfield. Server URL: https://mcp.penfield.app. Leave headers empty. Add MCP, then click Authorize. In a chat, type @Penfield.
+- Antigravity (app, IDE, CLI): in ~/.gemini/config/mcp_config.json add   "penfield": { "serverUrl": "https://mcp.penfield.app" }   inside "mcpServers" (with the CLI, run   agy mcp add penfield https://mcp.penfield.app   instead). Then choose Authenticate next to penfield in the list of MCP servers (app and IDE: Customizations > Installed > MCP Servers; CLI: type /mcp, select penfield, press Enter), open the link it shows, sign in to Penfield, click Authorize, and paste the code the browser shows back into Antigravity.
 - Perplexity, Manus: add a custom connector with the same name and URL. Guides are at https://docs.penfield.app/onboarding/
-- Cursor, Windsurf, Gemini CLI, Antigravity, LM Studio and similar: add the mcp-remote block from way 2 to the app's MCP config file, then restart the app.
+- Cursor, Windsurf, LM Studio and similar: add the mcp-remote block from way 2 to the app's MCP config file, then restart the app.
     Windsurf: ~/.codeium/windsurf/mcp_config.json
     Cursor: ~/.cursor/mcp.json
-    Gemini CLI: ~/.gemini/settings.json
-    Antigravity: ~/.gemini/antigravity/mcp_config.json
     LM Studio: Program > Install > Edit mcp.json
 - Any other app with MCP support: add a remote MCP server with the URL https://mcp.penfield.app, choose OAuth if asked, leave client ID, secret and headers empty. See https://docs.penfield.app/onboarding/other-clients/
 
@@ -123,6 +122,7 @@ Support: support@penfield.app
 
 Full setup guides with screenshots:
 
+- [Antigravity Setup](onboarding/antigravity-setup.md)
 - [ChatGPT Setup](onboarding/chatgpt-setup.md)
 - [Claude Setup](onboarding/claude-setup.md)
 - [Claude Code Setup](onboarding/claude-code-setup.md)
