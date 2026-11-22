@@ -40,12 +40,13 @@ You can choose from a standard persona and add custom instructions to personaliz
 
 Penfield connects to your AI as a remote MCP server. Most AI apps support this. They call it a *connector*, a *plugin* or an *app*, depending on the product, and the setup is the same idea everywhere: add `https://mcp.penfield.app` and sign in to Penfield.
 
+- [Antigravity Setup](onboarding/antigravity-setup.md) - Connect to Google Antigravity
 - [ChatGPT Setup](onboarding/chatgpt-setup.md) - Connect to ChatGPT
 - [Claude Setup](onboarding/claude-setup.md) - Connect to Claude
 - [Claude Code Setup](onboarding/claude-code-setup.md) - Connect to Claude Code in the terminal
 - [Grok Setup](onboarding/grok-setup.md) - Connect to Grok
 - [Manus Setup](onboarding/manus-setup.md) - Connect to Manus
-- [MCP Remote Setup](onboarding/mcp-remote-setup.md) - Antigravity, Cursor, LM Studio, Windsurf, and more
+- [MCP Remote Setup](onboarding/mcp-remote-setup.md) - Cursor, LM Studio, Windsurf, and more
 - [Perplexity Setup](onboarding/perplexity-setup.md) - Connect to Perplexity
 - [Others](onboarding/other-clients.md) - Connect any other AI that supports remote MCP servers
 

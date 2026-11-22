@@ -61,6 +61,7 @@ nav:
     - Example Custom Instructions: onboarding/example-custom-instructions.md
   - Platform Setup:
     - Overview: onboarding/README.md
+    - Antigravity: onboarding/antigravity-setup.md
     - ChatGPT: onboarding/chatgpt-setup.md
     - Claude: onboarding/claude-setup.md
     - Claude Code: onboarding/claude-code-setup.md

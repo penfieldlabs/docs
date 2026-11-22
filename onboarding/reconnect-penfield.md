@@ -39,6 +39,7 @@ If signing in again doesn't resolve the issue, remove the Penfield connector and
 
 Follow the setup guide for your app from the start:
 
+- [Antigravity Setup](antigravity-setup.md)
 - [ChatGPT Setup](chatgpt-setup.md)
 - [Claude Setup](claude-setup.md)
 - [Claude Code Setup](claude-code-setup.md)

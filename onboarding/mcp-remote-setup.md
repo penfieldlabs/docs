@@ -2,6 +2,8 @@
 
 Penfield works with any AI platform that supports MCP (Model Context Protocol) via `mcp-remote`. This guide covers setup for popular platforms.
 
+> **Antigravity** connects to Penfield directly and does not need `mcp-remote`. See [Antigravity Setup](antigravity-setup.md).
+
 ---
 
 ## Prerequisites
@@ -43,68 +45,11 @@ If authorization doesn't trigger automatically, try restarting the application a
 
 ## Platform-Specific Instructions
 
-- [Antigravity](#antigravity)
 - [Perplexity](#perplexity)
-- [Gemini CLI](#gemini-cli)
 - [Windsurf](#windsurf)
 - [Cursor](#cursor)
 - [LM Studio](#lm-studio)
 - [Other Platforms](#other-platforms)
-
----
-
-## Antigravity
-
-### Step 1: Open Agent Panel Menu
-
-In the Agent panel on the right side of the screen, click the **three-dot menu** (**⋯**).
-
-![Click the three-dot menu in Agent panel](./img/antigravity-01-agent-menu.png)
-
-### Step 2: Open MCP Servers
-
-From the dropdown menu, click **MCP Servers**.
-
-![Click MCP Servers](./img/antigravity-02-mcp-servers.png)
-
-### Step 3: Open Manage MCP Servers
-
-In the MCP Store panel, click **Manage MCP Servers** in the top right.
-
-![Click Manage MCP Servers](./img/antigravity-03-manage-mcp.png)
-
-### Step 4: View Raw Config
-
-Click **View raw config** to open the configuration file.
-
-![Click View raw config](./img/antigravity-04-view-raw-config.png)
-
-This opens `~/.gemini/antigravity/mcp_config.json` for editing.
-
-### Step 5: Add Configuration
-
-Add the Penfield configuration and save the file:
-
-![Antigravity mcp_config.json with Penfield](./img/antigravity-05-config.png)
-
-```json
-{
-  "mcpServers": {
-    "Penfield": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://mcp.penfield.app/"
-      ]
-    }
-  }
-}
-```
-
-### Step 6: Restart and Test
-
-Restart Antigravity. If you haven't authorized Penfield previously, a browser tab will open automatically. Start a new chat and type "Penfield Awaken" to test the connection.
 
 ---
 
@@ -144,45 +89,6 @@ Click the **Advanced** tab to confirm the JSON matches:
 ### Step 5: Save and Restart
 
 Click **Save**, then restart Perplexity Desktop. If you haven't authorized Penfield previously, a browser window will open for authorization.
-
----
-
-## Gemini CLI
-
-### Step 1: Edit Settings File
-
-Open `~/.gemini/settings.json` in your preferred editor:
-
-```bash
-nano ~/.gemini/settings.json
-# or
-code ~/.gemini/settings.json
-```
-
-### Step 2: Add Penfield Configuration
-
-Add the Penfield configuration to your settings file. Your file structure may vary depending on your authentication method:
-
-![Gemini CLI settings.json with Penfield configuration](./img/gemini-settings-json.png)
-
-```json
-{
-  "mcpServers": {
-    "Penfield": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://mcp.penfield.app/"
-      ]
-    }
-  }
-}
-```
-
-### Step 3: Restart and Authorize
-
-Run `gemini` again. If you haven't authorized Penfield previously, the authorization flow will open in your browser automatically. After authorizing, quit and restart Gemini CLI.
 
 ---
 
@@ -237,7 +143,7 @@ After authorization, click the plug icon to verify Penfield is connected and its
 
 ## Cursor
 
-> **Known Issue:** Cursor's MCP authentication can be unreliable. If you experience problems, try authorizing Penfield in another application first (such as Windsurf, Gemini CLI, or LM Studio), then return to Cursor.
+> **Known Issue:** Cursor's MCP authentication can be unreliable. If you experience problems, try authorizing Penfield in another application first (such as Windsurf or LM Studio), then return to Cursor.
 
 > **Note:** MCP tools may only be available in **Agent** mode, not in Ask or Plan modes.
 
@@ -357,10 +263,8 @@ Common configuration file locations:
 
 | Platform | Configuration File |
 |----------|-------------------|
-| Antigravity | `~/.gemini/antigravity/mcp_config.json` |
 | Windsurf | `~/.codeium/windsurf/mcp_config.json` |
 | Cursor | `~/.cursor/mcp.json` |
-| Gemini CLI | `~/.gemini/settings.json` |
 | LM Studio | Via Program > Install > Edit mcp.json |
 
 ---
